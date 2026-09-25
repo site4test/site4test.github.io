@@ -2,16 +2,12 @@
 <html lang="ro" data-theme="aur">
 <head>
 <meta charset="utf-8">
-<script>
-  // O adresă de folder fără „/" la final (…/goldenlotus) ar strica toate căile relative (poze, fonturi): o completăm.
-  (function () { var p = location.pathname; if (!/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) location.replace(p + '/' + location.search + location.hash); })();
-</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Golden Lotus — studiu de mișcare</title>
-<link rel="icon" href="lotus.svg" type="image/svg+xml">
-<link rel="preload" href="fonts/woff2/Ysabeau-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="media/hero-lant-aur.webp" as="image" fetchpriority="high">
+<link rel="icon" href="/projects/goldenlotus/lotus.svg" type="image/svg+xml">
+<link rel="preload" href="/projects/goldenlotus/fonts/woff2/Ysabeau-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/projects/goldenlotus/media/hero-lant-aur.webp" as="image" fetchpriority="high">
 <script>
   // tema și „mai puțină mișcare” se aplică înainte de prima desenare
   try {
@@ -28,10 +24,10 @@
   } catch (e) {}
 </script>
 <style>
-@font-face { font-family: "Ysabeau"; src: url("fonts/woff2/Ysabeau-var.woff2") format("woff2"); font-weight: 1 1000; font-style: normal; font-display: swap; }
-@font-face { font-family: "Ysabeau"; src: url("fonts/woff2/Ysabeau-Italic-var.woff2") format("woff2"); font-weight: 1 1000; font-style: italic; font-display: swap; }
-@font-face { font-family: "Ysabeau Office"; src: url("fonts/woff2/YsabeauOffice-var.woff2") format("woff2"); font-weight: 1 1000; font-display: swap; }
-@font-face { font-family: "Forum"; src: url("fonts/woff2/Forum-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Ysabeau"; src: url("/projects/goldenlotus/fonts/woff2/Ysabeau-var.woff2") format("woff2"); font-weight: 1 1000; font-style: normal; font-display: swap; }
+@font-face { font-family: "Ysabeau"; src: url("/projects/goldenlotus/fonts/woff2/Ysabeau-Italic-var.woff2") format("woff2"); font-weight: 1 1000; font-style: italic; font-display: swap; }
+@font-face { font-family: "Ysabeau Office"; src: url("/projects/goldenlotus/fonts/woff2/YsabeauOffice-var.woff2") format("woff2"); font-weight: 1 1000; font-display: swap; }
+@font-face { font-family: "Forum"; src: url("/projects/goldenlotus/fonts/woff2/Forum-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 
 /* ---------- tokeni (BRAND.md §2, §6.1) ---------- */
 :root {
@@ -471,7 +467,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   <section class="stage" id="top" aria-labelledby="h1">
     <div class="stage__sticky" id="sticky">
       <div class="lotus-window" id="lwin" aria-hidden="true">
-        <img src="media/hero-lant-aur.webp" alt="" width="1800" height="2250" fetchpriority="high" decoding="async">
+        <img src="/projects/goldenlotus/media/hero-lant-aur.webp" alt="" width="1800" height="2250" fetchpriority="high" decoding="async">
       </div>
       <svg class="lotus-outline" id="lout" data-lotus aria-hidden="true"></svg>
       <!-- intro: linia de sub lotus (din logo) e solul; picătura cade pe ea, stropește, lotusul iese din punctul de impact -->
@@ -516,8 +512,8 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   <!-- 4. VERIGHETE -->
   <section class="rings wrap" id="verighete" aria-labelledby="h-ring">
     <div class="rings__media" id="rings-media">
-      <figure class="rv rv--main"><img src="media/verighete-cutie.webp" alt="Două verighete de aur într-o cutie albă de catifea" width="1400" height="933" loading="lazy" decoding="async"></figure>
-      <figure class="rv rv--small" id="rv-small"><img src="media/col-verighete.webp" alt="O mireasă ține în palmă două verighete" width="1400" height="933" loading="lazy" decoding="async"></figure>
+      <figure class="rv rv--main"><img src="/projects/goldenlotus/media/verighete-cutie.webp" alt="Două verighete de aur într-o cutie albă de catifea" width="1400" height="933" loading="lazy" decoding="async"></figure>
+      <figure class="rv rv--small" id="rv-small"><img src="/projects/goldenlotus/media/col-verighete.webp" alt="O mireasă ține în palmă două verighete" width="1400" height="933" loading="lazy" decoding="async"></figure>
     </div>
     <div class="rings__copy">
       <p class="label">V — Verighete &amp; logodnă</p>
@@ -544,7 +540,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
       <article class="store">
         <div><h3>Strășeni</h3>
           <dl><dt>Program</dt><dd>Luni–Sâmbătă <span class="nw">9:00–19:00</span><br>Duminică <span class="nw">9:00–17:00</span></dd><dt>Telefon</dt><dd><a href="tel:+37362000587">062 000 587</a></dd><dt>Adresă</dt><dd class="tbc">de confirmat</dd></dl></div>
-        <img src="media/fatada-straseni.webp" alt="Fațada magazinului din Strășeni, cu firma AUR · ARGINT" width="640" height="1136" loading="lazy" decoding="async">
+        <img src="/projects/goldenlotus/media/fatada-straseni.webp" alt="Fațada magazinului din Strășeni, cu firma AUR · ARGINT" width="640" height="1136" loading="lazy" decoding="async">
       </article>
       <article class="store">
         <div><h3>Călărași</h3>
@@ -968,12 +964,12 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
 
   /* ================= 3. COLECȚIILE ================= */
   const COLL = [
-    { slug: 'inele', num: 'I', name: 'Inele', meta: 'aur · argint', img: 'media/col-inele.webp', pos: '66% 50%', text: 'De purtat zilnic sau pentru o seară anume. Alegi modelul aici și îl încerci în magazin.' },
-    { slug: 'cercei', num: 'II', name: 'Cercei', meta: 'aur · argint', img: 'media/col-cercei.webp', pos: '44% 82%', text: 'De la piese discrete, pentru fiecare zi, la cercei care se văd de la distanță.' },
-    { slug: 'lanturi-coliere', num: 'III', name: 'Lanțuri & coliere', meta: 'aur · argint', img: 'media/col-coliere.webp', pos: '50% 40%', text: 'Lanțuri fine sau groase, singure ori în straturi, cu sau fără pandantiv.' },
-    { slug: 'bratari', num: 'IV', name: 'Brățări', meta: 'aur · argint', img: 'media/col-bratari.webp', pos: '40% 60%', text: 'Brățări fine pentru fiecare zi și brățări rigide pentru ocazii.' },
-    { slug: 'verighete', num: 'V', name: 'Verighete', meta: 'logodnă · nuntă', img: 'media/col-verighete.webp', pos: '55% 55%', text: 'Verighete și inele de logodnă. Programați proba și le încercați împreună.' },
-    { slug: 'argint', num: 'VI', name: 'Argint', meta: 'argint', img: 'media/col-argint.webp', pos: '50% 45%', text: 'Bijuterii din argint, pentru cine preferă lumina rece a metalului alb.' },
+    { slug: 'inele', num: 'I', name: 'Inele', meta: 'aur · argint', img: '/projects/goldenlotus/media/col-inele.webp', pos: '66% 50%', text: 'De purtat zilnic sau pentru o seară anume. Alegi modelul aici și îl încerci în magazin.' },
+    { slug: 'cercei', num: 'II', name: 'Cercei', meta: 'aur · argint', img: '/projects/goldenlotus/media/col-cercei.webp', pos: '44% 82%', text: 'De la piese discrete, pentru fiecare zi, la cercei care se văd de la distanță.' },
+    { slug: 'lanturi-coliere', num: 'III', name: 'Lanțuri & coliere', meta: 'aur · argint', img: '/projects/goldenlotus/media/col-coliere.webp', pos: '50% 40%', text: 'Lanțuri fine sau groase, singure ori în straturi, cu sau fără pandantiv.' },
+    { slug: 'bratari', num: 'IV', name: 'Brățări', meta: 'aur · argint', img: '/projects/goldenlotus/media/col-bratari.webp', pos: '40% 60%', text: 'Brățări fine pentru fiecare zi și brățări rigide pentru ocazii.' },
+    { slug: 'verighete', num: 'V', name: 'Verighete', meta: 'logodnă · nuntă', img: '/projects/goldenlotus/media/col-verighete.webp', pos: '55% 55%', text: 'Verighete și inele de logodnă. Programați proba și le încercați împreună.' },
+    { slug: 'argint', num: 'VI', name: 'Argint', meta: 'argint', img: '/projects/goldenlotus/media/col-argint.webp', pos: '50% 45%', text: 'Bijuterii din argint, pentru cine preferă lumina rece a metalului alb.' },
   ];
   const ARROW = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
   const list = $('#coll-list');
