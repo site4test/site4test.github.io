@@ -12,13 +12,13 @@
   // tema și „mai puțină mișcare” se aplică înainte de prima desenare
   try {
     var t = localStorage.getItem('gl-theme'); if (t === 'argint' || t === 'aur') document.documentElement.dataset.theme = t;
-    if (localStorage.getItem('gl-motion') === 'reduce') document.documentElement.dataset.motion = 'reduce';
+    localStorage.removeItem('gl-motion'); // butonul „Mai puțină mișcare” a fost scos; curățăm o alegere veche
   } catch (e) {}
   document.documentElement.classList.add('js');
   // intro-ul cu picătura de aur: la FIECARE deschidere a paginii (un singur link, fără variante).
   // Nu rulează doar cu „mai puțină mișcare” sau când adresa duce direct la o secțiune (#…).
   try {
-    var still = matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'reduce';
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!still && !location.hash)
       { document.documentElement.classList.add('intro', 'intro-lock'); history.scrollRestoration = 'manual'; }
   } catch (e) {}
@@ -51,7 +51,7 @@
   --gutter: clamp(20px, 5vw, 72px);
   --hdr-h: 68px;
   /* straturi */
-  --z-preview: 30; --z-hdr: 40; --z-flag: 50; --z-cview: 60;
+  --z-hdr: 40; --z-cview: 60;
 }
 :root, [data-theme="aur"] {
   --bg:var(--porcelain); --surface:var(--paper); --surface-2:var(--mist);
@@ -193,11 +193,10 @@ html.intro-played .intro-fx { display: block; }
 #fx-drop path { fill: url(#g-drop-gold); }
 #fx-glint { fill: url(#g-glint-gold); }
 html.intro-lock { overflow: hidden; }
-html.intro .hdr, html.intro .flag, html.intro .stage h1 { opacity: 0; pointer-events: none; }
+html.intro .hdr, html.intro .stage h1 { opacity: 0; pointer-events: none; }
 html.intro .lotus-window { opacity: 0; }
 html.intro .stage h1 .ln, html.intro .stage .accent, html.intro .stage .fade-up { animation-play-state: paused; }
 html.intro-played { --shift: 1100ms; }
-.flag { transition: opacity 800ms var(--ease-soft); }
 
 /* ---------- 2. manifest ---------- */
 .manifest { padding: clamp(110px, 16vw, 230px) 0; text-align: center; }
@@ -212,11 +211,11 @@ html.intro-played { --shift: 1100ms; }
 .coll { padding-bottom: clamp(110px, 14vw, 200px); }
 .coll__head { display: flex; justify-content: space-between; align-items: end; gap: 24px; border-bottom: 1px solid var(--line); padding-bottom: 22px; }
 .coll__head h2 { margin: 12px 0 0; font: 200 clamp(1.6rem, 1rem + 1.6vw, 2.4rem)/1.1 var(--f-display); }
-.coll__head p { margin: 0; color: var(--fg-muted); font-size: .92rem; max-width: 30ch; text-align: right; }
-@media (max-width: 700px) { .coll__head { flex-direction: column; align-items: flex-start; gap: 10px; } .coll__head p { text-align: left; } }
+.coll__head > p { margin: 0; color: var(--fg-muted); font-size: .92rem; max-width: 30ch; text-align: right; }
+@media (max-width: 700px) { .coll__head { flex-direction: column; align-items: flex-start; gap: 10px; } .coll__head > p { text-align: left; } }
 .coll ol { list-style: none; margin: 0; padding: 0; }
 .coll li { border-bottom: 1px solid var(--line); }
-.row { display: grid; grid-template-columns: 4.2rem 1fr auto; align-items: center; gap: 12px; padding: clamp(14px, 2.2vw, 26px) 0; text-decoration: none; cursor: pointer; transition: opacity 500ms var(--ease-soft); }
+.row { display: grid; grid-template-columns: 4.2rem 1fr auto auto; align-items: center; gap: 12px; padding: clamp(14px, 2.2vw, 26px) 0; text-decoration: none; cursor: pointer; transition: opacity 500ms var(--ease-soft); }
 .row .num { font: 400 .8rem/1 var(--f-inscr); letter-spacing: .2em; color: var(--fg-muted); transition: color var(--d-ui); }
 .row .name { font: 140 clamp(2.2rem, 1rem + 5.4vw, 6.4rem)/1 var(--f-display); letter-spacing: -.02em; transition: font-weight 700ms var(--ease-bloom), transform 700ms var(--ease-bloom); }
 .row .meta { display: inline-flex; align-items: center; gap: 14px; font: 400 .72rem/1 var(--f-inscr); letter-spacing: .26em; text-transform: uppercase; color: var(--fg-muted); }
@@ -225,22 +224,12 @@ html.intro-played { --shift: 1100ms; }
 .row.is-hot .name, .row:focus-visible .name { font-weight: 380; transform: translateX(12px); }
 .row.is-hot .num, .row:focus-visible .num { color: var(--metal-text); }
 .row.is-hot .meta svg, .row:focus-visible .meta svg { opacity: 1; transform: none; }
-.row .thumb { display: none; }
-/* previzualizarea stă pe loc (nu urmează cursorul): coloana din dreapta, la mijlocul ecranului cât derulezi lista */
-.coll__body { display: grid; }
-.coll__body > * { grid-area: 1 / 1; }
-.preview { --pw: clamp(220px, 19vw, 300px); position: sticky; top: calc(50vh - var(--pw) * .625); align-self: start; justify-self: end; z-index: 2;
-  width: var(--pw); aspect-ratio: 4 / 5; pointer-events: none; overflow: hidden;
-  clip-path: inset(50% 0 50% 0); transition: clip-path 380ms var(--ease-exit); }
-.preview.is-on { clip-path: inset(0 0 0 0); transition: clip-path 750ms var(--ease-bloom); }
-.preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 450ms var(--ease-soft), transform 1200ms var(--ease-bloom); }
-.preview img.is-old { opacity: 0; transform: scale(1.06); }
-.preview span { position: absolute; left: 14px; bottom: 12px; z-index: 1; color: #fff; font: 400 .66rem/1 var(--f-inscr); letter-spacing: .28em; text-transform: uppercase; text-shadow: 0 1px 12px rgba(0,0,0,.45); }
-@media (hover: none), (pointer: coarse), (max-width: 900px) {
-  .preview { display: none; }
+/* poza colecției stă în fiecare rând, mereu vizibilă (ca pe telefon), nu la trecerea cursorului */
+.row .thumb { display: block; width: clamp(60px, 6.5vw, 92px); height: auto; aspect-ratio: 4 / 5; object-fit: cover; margin-left: clamp(8px, 2vw, 28px); }
+@media (max-width: 900px) {
   .row { grid-template-columns: 2.4rem 1fr 60px; }
   .row .meta { display: none; }
-  .row .thumb { display: block; width: 60px; aspect-ratio: 4 / 5; object-fit: cover; }
+  .row .thumb { width: 60px; margin-left: 0; }
 }
 
 /* ---------- vederea colecției (element comun cu previzualizarea) ---------- */
@@ -312,9 +301,6 @@ html.intro-played { --shift: 1100ms; }
 .ftr .word { font: 400 .88rem/1 var(--f-inscr); letter-spacing: .4em; margin-top: 4px; }
 .ftr .rule { width: 96px; height: 1px; background: var(--line); }
 .ftr .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--fg-muted); }
-.ftr__row { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 24px; font-size: .84rem; color: var(--fg-muted); }
-.ftr__row button { min-height: 44px; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; cursor: pointer; }
-.ftr__row button[aria-pressed="true"] { border-color: var(--fg); color: var(--fg); }
 
 /* ---------- sertarul de rezervare ---------- */
 .drawer { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100dvh; max-height: none; max-width: none; width: min(460px, 100vw); border: 0; border-left: 1px solid var(--line); padding: 0; background: var(--surface); color: var(--fg);
@@ -400,16 +386,12 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
 .no-anim, .no-anim * { transition: none !important; animation: none !important; }
 
 /* ---------- eticheta de studiu ---------- */
-.flag { position: fixed; right: 12px; bottom: 12px; z-index: var(--z-flag); margin: 0; font: 400 .66rem/1.3 var(--f-text); letter-spacing: .04em; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--fg-muted); max-width: calc(100vw - 24px); }
-@media (max-width: 600px) { .flag { bottom: auto; top: 76px; font-size: .6rem; } }
 
 /* ---------- mai puțină mișcare ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
   .stage { height: auto; } .stage__sticky { position: relative; height: 100svh; }
 }
-[data-motion="reduce"] *, [data-motion="reduce"] *::before, [data-motion="reduce"] *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
-[data-motion="reduce"] .stage { height: auto; } [data-motion="reduce"] .stage__sticky { position: relative; height: 100svh; }
 </style>
 </head>
 <body>
@@ -503,10 +485,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   <!-- 3. COLECȚIILE -->
   <section class="coll wrap" id="colectii" aria-labelledby="h-col">
     <div class="coll__head"><div><p class="label">Colecțiile</p><h2 id="h-col">Șase feluri de a purta lumina</h2></div><p>Alege o colecție, apoi rezervă proba în magazin.</p></div>
-    <div class="coll__body">
-      <ol id="coll-list"></ol>
-      <div class="preview" id="preview" aria-hidden="true"><img alt=""><img alt="" class="is-old"><span>Deschide colecția</span></div>
-    </div>
+    <ol id="coll-list"></ol>
   </section>
 
   <!-- 4. VERIGHETE -->
@@ -554,10 +533,6 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
 <footer class="ftr" id="ftr">
   <svg data-lotus data-draw data-onview viewBox="280 200 690 580" aria-hidden="true" style="--draw-delay:0ms"></svg>
   <span class="word">GOLDEN LOTUS</span><span class="rule"></span><span class="dot"></span>
-  <div class="ftr__row">
-    <span>Studiu de mișcare pentru demonstrație · 24.09.2026</span>
-    <button type="button" id="motion-toggle" aria-pressed="false">Mai puțină mișcare</button>
-  </div>
 </footer>
 
 <!-- vederea unei colecții: se deschide din imaginea previzualizată (element comun) -->
@@ -611,7 +586,6 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   </div>
 </dialog>
 
-<p class="flag">Studiu de mișcare · nu e site-ul final · imagini STOCK</p>
 
 <script>
 (() => {
@@ -620,7 +594,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
-  const reduced = () => reduceMQ.matches || html.dataset.motion === 'reduce';
+  const reduced = () => reduceMQ.matches;
 
   /* ---------- lotusul: un singur desen, dintr-o linie (brand/lotus.svg) ----------
      Același lotus peste tot: mic în antet, subsol și sertar (linie groasă) și mare pe primul ecran (linie subțire),
@@ -692,16 +666,6 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   };
   $$('[data-set-theme]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.setTheme)));
   setTheme(html.dataset.theme || 'aur');
-
-  /* ---------- mai puțină mișcare ---------- */
-  const mt = $('#motion-toggle');
-  const syncMotion = () => mt.setAttribute('aria-pressed', String(html.dataset.motion === 'reduce'));
-  mt.addEventListener('click', () => {
-    if (html.dataset.motion === 'reduce') { delete html.dataset.motion; try { localStorage.removeItem('gl-motion'); } catch (e) {} }
-    else { html.dataset.motion = 'reduce'; try { localStorage.setItem('gl-motion', 'reduce'); } catch (e) {} }
-    syncMotion(); measure(); kickStage();
-  });
-  syncMotion();
 
   /* ================= 1. LOTUSUL CA FEREASTRĂ ================= */
   const stage = $('#top'), sticky = $('#sticky'), slot = $('#slot'), lwin = $('#lwin'), lout = $('#lout');
@@ -974,38 +938,19 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   const ARROW = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
   const list = $('#coll-list');
   list.innerHTML = COLL.map((c, i) => `<li><a class="row" href="#colectie-${c.slug}" data-i="${i}"><span class="num">${c.num}</span><span class="name">${c.name.replace('&', '&amp;')}</span><span class="meta">${c.meta}${ARROW}</span><img class="thumb" src="${c.img}" alt="" loading="lazy" style="object-position:${c.pos}"></a></li>`).join('');
-  COLL.forEach(c => { const im = new Image(); im.decoding = 'async'; im.src = c.img; }); // preîncărcare: fără pauze la schimbare
 
-  /* previzualizarea: un cadru fix în coloana din dreapta (nu urmează cursorul); se schimbă doar poza, prin încrucișare */
-  const prev = $('#preview'); let [front, back] = prev.querySelectorAll('img');
-  const fine = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 901px)');
-  let current = -1;
-  const pvShow = i => {
-    if (i === current) return; current = i;
-    back.src = COLL[i].img; back.style.objectPosition = COLL[i].pos;
-    back.classList.remove('is-old'); front.classList.add('is-old'); [front, back] = [back, front];
-  };
+  /* la trecerea cursorului doar rândul se evidențiază (numele se îngroașă, celelalte se estompează); poza e deja în rând */
   const hot = a => { $$('.row.is-hot').forEach(r => r !== a && r.classList.remove('is-hot')); a && a.classList.add('is-hot'); list.classList.toggle('is-hovering', !!a); };
-  list.addEventListener('pointerover', e => {
-    const a = e.target.closest('.row'); if (!a || e.pointerType === 'touch') return;
-    hot(a);
-    if (fine.matches && !reduced()) { pvShow(+a.dataset.i); prev.classList.add('is-on'); }
-  });
-  const pvHide = () => { prev.classList.remove('is-on'); hot(null); };
-  list.addEventListener('pointerleave', pvHide);
-  // tastatura: previzualizare doar la focus vizibil (nu după un clic cu mausul)
-  list.addEventListener('focusin', e => {
-    const a = e.target.closest('.row'); if (!a || !a.matches(':focus-visible')) return;
-    hot(a);
-    if (fine.matches && !reduced()) { pvShow(+a.dataset.i); prev.classList.add('is-on'); }
-  });
-  list.addEventListener('focusout', e => { if (!list.contains(e.relatedTarget)) pvHide(); });
+  list.addEventListener('pointerover', e => { const a = e.target.closest('.row'); if (a && e.pointerType !== 'touch') hot(a); });
+  list.addEventListener('pointerleave', () => hot(null));
+  list.addEventListener('focusin', e => { const a = e.target.closest('.row'); if (a && a.matches(':focus-visible')) hot(a); });
+  list.addEventListener('focusout', e => { if (!list.contains(e.relatedTarget)) hot(null); });
   list.addEventListener('click', e => {
     const a = e.target.closest('.row'); if (!a) return;
     e.preventDefault();
     const i = +a.dataset.i;
-    const src = (prev.classList.contains('is-on') && current === i) ? prev.getBoundingClientRect() : (a.querySelector('.thumb').offsetWidth ? a.querySelector('.thumb').getBoundingClientRect() : a.querySelector('.name').getBoundingClientRect());
-    openCollection(i, src, a);
+    openCollection(i, a.querySelector('.thumb').getBoundingClientRect(), a); // colecția se deschide din poza rândului
+
   });
 
   /* ================= vederea colecției ================= */
@@ -1030,7 +975,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   function openCollection(i, srcRect, returnEl) {
     cancelAll(); cvIndex = i; cvReturn = returnEl || null;
     fillCollection(i, false);
-    cv.hidden = false; setLocked(true); pvHide();
+    cv.hidden = false; setLocked(true); hot(null);
     if (!cvPushed) { history.pushState({ cv: COLL[i].slug }, '', '#colectie-' + COLL[i].slug); cvPushed = true; }
     const done = () => $('#cv-title').focus({ preventScroll: true });
     if (reduced() || !srcRect || !cvMedia.animate) { done(); return; }
