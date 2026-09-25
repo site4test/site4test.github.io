@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Golden Lotus — studiu de mișcare</title>
+<title>Golden Lotus — bijuterii din aur și argint</title>
 <link rel="icon" href="/projects/goldenlotus/lotus.svg" type="image/svg+xml">
 <link rel="preload" href="/projects/goldenlotus/fonts/woff2/Ysabeau-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/projects/goldenlotus/media/hero-lant-aur.webp" as="image" fetchpriority="high">
@@ -200,6 +200,19 @@ html.intro-played { --shift: 1100ms; }
 
 /* ---------- 2. manifest ---------- */
 .manifest { padding: clamp(110px, 16vw, 230px) 0; text-align: center; }
+/* secțiune fixată: învelișul e mai înalt decât ecranul, interiorul stă lipit sus cât se derulează diferența */
+.pin { position: relative; }
+.pin__sticky { position: sticky; top: 0; min-height: 100svh; display: grid; align-content: center; }
+#pin-man { height: calc(100svh + 80vh); }
+#pin-man .manifest { padding-block: calc(var(--hdr-h) + 12px) 24px; }
+@media (min-width: 901px) and (min-height: 620px) {
+  #pin-ring { height: calc(100svh + 90vh); margin-bottom: clamp(40px, 5vw, 80px); }
+  #pin-ring .rings { padding-block: calc(var(--hdr-h) + 12px) 24px; }
+}
+@media (max-width: 900px), (max-height: 619px) { #pin-ring .pin__sticky { position: static; min-height: 0; display: block; } }
+@media (prefers-reduced-motion: reduce) { .pin { height: auto !important; } .pin__sticky { position: static; min-height: 0; display: block; } }
+/* în modul „legat de derulare”, animațiile nu mai au tranziții proprii: merg exact cu degetul / rotița */
+.is-scrub .bloom-line, .is-scrub .rv, .is-scrub .rv img, .is-scrub .rings__copy > * { transition: none !important; }
 .manifest h2 { margin: 18px auto 0; font: 200 var(--t-h2)/1.02 var(--f-display); letter-spacing: -.02em; max-width: 21ch; }
 .manifest h2 .ln { display: block; }
 .bloom-line { font-weight: 200; }
@@ -464,7 +477,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
       </svg>
       <div class="stage__copy" id="copy">
         <div class="lotus-slot" id="slot"><svg data-lotus viewBox="280 200 690 630" aria-hidden="true"></svg></div>
-        <h1 id="h1"><span class="ln">Lumina care<br> <em class="accent">rămâne</em> a ta.</span></h1>
+        <h1 id="h1"><span class="ln">Pentru clipele<br> care <em class="accent">contează</em>.</span></h1>
         <p class="stage__sub fade-up" style="--dl:1350ms">Bijuterii din aur și argint,<br class="br-m"> alese cu grijă.</p>
         <div class="stage__cta fade-up" style="--dl:1550ms">
           <button class="pill pill--solid" type="button" data-open-reserve id="hero-cta">Rezervă o piesă</button>
@@ -475,12 +488,14 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
     </div>
   </section>
 
-  <!-- 2. MANIFEST -->
+  <!-- 2. MANIFEST — fixat: stă pe loc cât rândurile „înfloresc” odată cu derularea -->
+  <div class="pin" id="pin-man"><div class="pin__sticky">
   <section class="manifest wrap" aria-labelledby="h-man">
     <p class="label">Golden Lotus · <b>Aur</b> &amp; <b>Argint</b></p>
-    <h2 id="h-man" data-bloom><span class="ln bloom-line" style="--i:0">Fiecare piesă trece</span><span class="ln bloom-line" style="--i:1">prin mâinile noastre</span><span class="ln bloom-line" style="--i:2">înainte să fie a ta.</span></h2>
+    <h2 id="h-man"><span class="ln bloom-line" style="--i:0">Fiecare piesă trece</span><span class="ln bloom-line" style="--i:1">prin mâinile noastre</span><span class="ln bloom-line" style="--i:2">înainte să fie a ta.</span></h2>
     <p>Rezervi online, o vezi în magazin, o iei acasă doar dacă îți place.</p>
   </section>
+  </div></div>
 
   <!-- 3. COLECȚIILE -->
   <section class="coll wrap" id="colectii" aria-labelledby="h-col">
@@ -488,7 +503,8 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
     <ol id="coll-list"></ol>
   </section>
 
-  <!-- 4. VERIGHETE -->
+  <!-- 4. VERIGHETE — fixat pe ecrane mari: pozele se deschid și textul înflorește odată cu derularea -->
+  <div class="pin" id="pin-ring"><div class="pin__sticky">
   <section class="rings wrap" id="verighete" aria-labelledby="h-ring">
     <div class="rings__media" id="rings-media">
       <figure class="rv rv--main"><img src="/projects/goldenlotus/media/verighete-cutie.webp" alt="Două verighete de aur într-o cutie albă de catifea" width="1400" height="933" loading="lazy" decoding="async"></figure>
@@ -499,9 +515,9 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
       <h2 id="h-ring" data-bloom><span class="ln bloom-line" style="--i:0">Alese în doi,</span><span class="ln bloom-line" style="--i:1"><em>purtate</em> o viață.</span></h2>
       <p>Încercați împreună, fără grabă, în magazinul din Călărași sau din Strășeni. Programezi proba, noi pregătim modelele.</p>
       <button class="pill" type="button" data-open-reserve data-title="Programează o probă" data-ctx="Verighete &amp; logodnă">Programează o probă</button>
-      <p class="note">Studiu: aici vine momentul 3D — o verighetă care se rotește la derulare (BRAND.md §6.3).</p>
     </div>
   </section>
+  </div></div>
 
   <!-- 5. 20 DE ANI -->
   <section class="wrap" aria-labelledby="h-years">
@@ -548,7 +564,6 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
       <button class="pill pill--solid" type="button" data-open-reserve id="cv-reserve" data-title="Rezervă o probă">Rezervă o probă</button>
       <a class="link-arrow" href="tel:+37362000587">Sună: 062 000 587 <span aria-hidden="true">→</span></a>
     </div>
-    <p class="note">Studiu: aici apar piesele reale ale colecției, după ședința foto.</p>
     <div class="cview__nav"><button class="link-arrow link-arrow--back" type="button" id="cv-prev"></button><button class="link-arrow" type="button" id="cv-next"></button></div>
   </div>
 </div>
@@ -860,10 +875,10 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
       ticking = false; const y = scrollY;
       hdr.classList.toggle('is-solid', y > 40);
       hdr.classList.toggle('is-hidden', y > lastY && y > 400 && !$('#reserve').open);
-      lastY = y; parallax();
+      lastY = y; scrub(); parallax();
     });
   }, { passive: true });
-  addEventListener('resize', () => { measure(); kickStage(); });
+  addEventListener('resize', () => { measure(); kickStage(); scrub(); });
   document.fonts && document.fonts.ready.then(() => { measure(); kickStage(); });
   measure(); kickStage();
   // prima intrare din sesiune: intro-ul; altfel, ca înainte: conturul se desenează peste fotografie
@@ -882,6 +897,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
      Intră când elementul e bine în ecran; se resetează (instant, fără să se vadă) abia când a ieșit complet,
      ca să nu pâlpâie dacă vizitatorul se oprește chiar la margine. */
   const play = el => {
+    if (el.closest('.pin.is-scrub')) return;   // în secțiunile fixate, animația merge cu derularea
     if (el.matches('svg[data-onview]')) return drawNow(el);
     if (el.id === 'count') return countUp(el);
     el.classList.add('is-in');   // [data-bloom], #rings-media
@@ -907,11 +923,70 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
   // poza mică de la verighete: parallax mai vizibil (dublu față de înainte), tot discret
   const rvSmall = $('#rv-small');
   function parallax() {
+    if ($('#pin-ring').classList.contains('is-scrub')) return;   // pe ecrane mari, poza mică se mișcă din scrub()
     if (reduced()) { rvSmall.style.setProperty('--par', '0px'); return; }
     const r = rvSmall.getBoundingClientRect(); if (r.bottom < -100 || r.top > innerHeight + 100) return;
     rvSmall.style.setProperty('--par', (((r.top + r.height / 2) - innerHeight / 2) * -.16).toFixed(1) + 'px');
   }
   parallax();
+
+  /* ---------- momentele fixate: secțiunea stă pe loc, iar animația merge odată cu derularea ----------
+     Cine derulează repede o vede mai repede, dar nu o poate sări; la urcare merge exact invers. */
+  const eo3 = t => 1 - Math.pow(1 - t, 3);
+  const BLOOM_PROPS = ['fontWeight', 'letterSpacing', 'opacity', 'filter'];
+  function bloom(lines, p) {
+    lines.forEach((ln, i) => {
+      const q = eo3(clamp((p - i * .16) / .42));
+      ln.style.fontWeight = Math.round(40 + 160 * q);
+      ln.style.letterSpacing = (.03 - .05 * q).toFixed(4) + 'em';
+      ln.style.opacity = (.25 + .75 * q).toFixed(3);
+      ln.style.filter = q > .995 ? 'none' : `blur(${(5 * (1 - q)).toFixed(2)}px)`;
+    });
+  }
+  const fadeUp = (el, q) => { el.style.opacity = q.toFixed(3); el.style.transform = `translateY(${((1 - q) * 14).toFixed(1)}px)`; };
+  const ringMQ = matchMedia('(min-width: 901px) and (min-height: 620px)');
+  const PINS = [
+    {
+      el: $('#pin-man'), active: () => !reduced(),
+      lines: $$('#h-man .bloom-line'), rest: [$('.manifest > p:not(.label)')],
+      draw(p) { bloom(this.lines, clamp(p / .8)); fadeUp(this.rest[0], clamp((p - .55) / .3)); },
+    },
+    {
+      el: $('#pin-ring'), active: () => !reduced() && ringMQ.matches,
+      lines: $$('#h-ring .bloom-line'), rest: [$('.rings__copy > .label'), ...$$('.rings__copy > :not(h2):not(.label)')],
+      main: $('.rv--main'), small: $('#rv-small'),
+      draw(p) {
+        const q1 = eo3(clamp(p / .45)), q2 = eo3(clamp((p - .12) / .45));
+        this.main.style.clipPath = `inset(${((1 - q1) * 100).toFixed(2)}% 0 0 0)`;
+        this.main.querySelector('img').style.transform = `scale(${(1.18 - .18 * q1).toFixed(4)})`;
+        this.small.style.clipPath = `inset(${((1 - q2) * 100).toFixed(2)}% 0 0 0)`;
+        this.small.querySelector('img').style.transform = `scale(${(1.18 - .18 * q2).toFixed(4)})`;
+        this.small.style.setProperty('--par', lerp(80, -60, p).toFixed(1) + 'px');   // poza mică urcă vizibil peste cea mare
+        bloom(this.lines, clamp((p - .1) / .7));
+        fadeUp(this.rest[0], clamp((p - .04) / .22));                                   // eticheta, prima
+        this.rest.slice(1).forEach((el, i) => fadeUp(el, clamp((p - .42 - i * .06) / .25))); // textul și butonul, după titlu
+      },
+    },
+  ];
+  function scrub() {
+    for (const pin of PINS) {
+      const on = pin.active();
+      if (!on) {
+        // ieșit din modul fixat (ecran mic, mai puțină mișcare): curățăm stilurile puse din JS
+        if (pin.el.classList.contains('is-scrub')) {
+          pin.el.classList.remove('is-scrub');
+          pin.lines.forEach(ln => BLOOM_PROPS.forEach(k => { ln.style[k] = ''; }));
+          pin.rest.forEach(el => { el.style.opacity = ''; el.style.transform = ''; });
+          [pin.main, pin.small].forEach(f => { if (f) { f.style.clipPath = ''; f.querySelector('img').style.transform = ''; } });
+        }
+        continue;
+      }
+      pin.el.classList.add('is-scrub');
+      const r = pin.el.getBoundingClientRect(), total = r.height - innerHeight;
+      pin.draw(total > 0 ? clamp(-r.top / total) : 1);
+    }
+  }
+  scrub();
 
   let countRaf = 0;
   function countUp(el) {
@@ -1036,6 +1111,37 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
     });
   }
   const stopGlide = () => { glideId++; };
+
+  /* ---------- derularea lină a rotiței (doar mausul, pe calculator) ----------
+     Rotița sare ~100px dintr-odată; aici aceeași distanță e parcursă lin, în ~0,25 s. Viteza rămâne a vizitatorului:
+     dacă învârte repede, merge repede. Touchpad-ul, telefonul, tastatura și bara de derulare rămân exact ca în browser. */
+  (() => {
+    if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    let target = scrollY, cur = scrollY, raf = 0, last = 0;
+    // rotiță de maus = pași mari și întregi pe verticală; touchpad-ul trimite pași mici, fracționari, și e lăsat nativ
+    const isMouseWheel = e => e.deltaMode === 1 || (e.deltaMode === 0 && e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY));
+    const step = now => {
+      const dt = Math.min(64, last ? now - last : 16.7); last = now;
+      cur += (target - cur) * (1 - Math.pow(1 - .16, dt / 16.7));
+      if (Math.abs(target - cur) < .5) cur = target;
+      scrollTo(0, cur);
+      if (cur !== target) raf = requestAnimationFrame(step); else { raf = 0; last = 0; }
+    };
+    addEventListener('wheel', e => {
+      if (e.ctrlKey || reduced() || !isMouseWheel(e)) return;
+      if (html.classList.contains('intro-lock') || html.classList.contains('is-locked')) return;
+      if (e.target instanceof Element && e.target.closest('dialog, .cview')) return;
+      e.preventDefault();
+      if (!raf) { cur = target = scrollY; }
+      target = clamp(target + (e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY), 0, html.scrollHeight - innerHeight);
+      if (!raf) raf = requestAnimationFrame(step);
+    }, { passive: false });
+    // dacă altceva mișcă pagina (bara, tastatura, un link), renunțăm la netezire și pornim de unde e pagina
+    addEventListener('scroll', () => {
+      if (raf && Math.abs(scrollY - cur) > 2) { cancelAnimationFrame(raf); raf = 0; last = 0; }
+      if (!raf) cur = target = scrollY;
+    }, { passive: true });
+  })();
   addEventListener('wheel', stopGlide, { passive: true });
   addEventListener('touchstart', stopGlide, { passive: true });
   addEventListener('keydown', e => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) stopGlide(); });
@@ -1046,7 +1152,9 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
     const el = document.getElementById(id); if (!el) return;
     e.preventDefault();
     const pad = parseFloat(getComputedStyle(html).scrollPaddingTop) || 0;
-    glideTo(id === 'top' ? 0 : el.getBoundingClientRect().top + scrollY - pad).then(ok => {
+    const pin = el.closest('.pin.is-scrub');
+    const y = id === 'top' ? 0 : pin ? pin.getBoundingClientRect().top + scrollY + pin.offsetHeight - innerHeight : el.getBoundingClientRect().top + scrollY - pad;
+    glideTo(y).then(ok => {
       if (ok && id !== 'top') { el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: true }); }
     });
   });
