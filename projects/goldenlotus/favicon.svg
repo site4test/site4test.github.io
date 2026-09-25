@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="280 200 690 580" role="img" aria-label="Golden Lotus">
+  <!--
+    Golden Lotus — semnul (lotusul) din linie, după logo-ul 3D al clientului
+    (images/10-brand-logo/logo-fb-avatar.jpg, 1254×1254).
+    Versiunea 3 (25.09.2026): MĂSURATĂ pe pixelii logo-ului, nu desenată cu ochiul. Marginile panglicilor au fost
+    detectate automat (panglica = aur sau teșitură închisă cu albastru ~0; umbra aruncată = cenușie, exclusă), pe latura
+    stângă, care nu are umbre, apoi oglindite. Axa logo-ului e la x = 624; aici e mutată la 625 (centrul viewBox-ului).
+    Liniile de mai jos sunt AXA fiecărei panglici (mijlocul dintre marginea exterioară și cea interioară).
+
+    Fiecare element e o LINIE (fără umplere), ca să se poată „desena” cu stroke-dashoffset.
+    pathLength="1" → animația folosește aceleași valori (0…1) pe orice traseu.
+    Ordinea de animație (data-o): apa → frunzele de la bază → petala centrală → petalele mari → cârligele din spate.
+    Grosimea care imită panglica din logo: ~24 de unități. Varianta umplută (fereastra foto): lotus-silueta.svg.
+  -->
+  <g fill="none" stroke="currentColor" stroke-width="24" style="stroke-width: var(--lotus-stroke, 24)"
+     stroke-linecap="round" stroke-linejoin="miter" stroke-miterlimit="12">
+    <!-- apa: bucla dublă (un singur traseu în formă de 8, se încrucișează în centru) -->
+    <path data-o="1" pathLength="1" d="M625,694.3 C564.8,634.8 460.6,668.1 437.6,726.8 C484.7,752 572.8,743.3 625,694.3 C677.2,743.3 765.3,752 812.4,726.8 C789.4,668.1 685.2,634.8 625,694.3"/>
+    <!-- frunzele de la bază: „<” — brațul de sus, vârful, brațul de jos -->
+    <path data-o="2" pathLength="1" d="M436.6,629 C407.2,624.8 375.5,638.7 354.7,659 C377.1,680.8 410.5,699.8 442,686"/>
+    <path data-o="2" pathLength="1" d="M813.4,629 C842.8,624.8 874.5,638.7 895.3,659 C872.9,680.8 839.5,699.8 808,686"/>
+    <!-- petala centrală: două jumătăți care urcă simultan de la bază spre vârf -->
+    <path data-o="3" pathLength="1" d="M625,626.9 C588.5,570.7 527.9,520.4 529.5,445 C525.5,358.2 567.3,284.9 625,226.1"/>
+    <path data-o="3" pathLength="1" d="M625,626.9 C661.5,570.7 722.1,520.4 720.5,445 C724.5,358.2 682.7,284.9 625,226.1"/>
+    <!-- petalele mari: de la bază, pe marginea de jos, până la vârf, apoi înapoi până intră în petala centrală -->
+    <path data-o="4" pathLength="1" d="M604.8,633.7 C465.8,661 325.6,556.5 306.8,422.3 C340,419.1 401.5,417.7 436,454.4 C470.9,481.1 502.5,512 533,543.6"/>
+    <path data-o="4" pathLength="1" d="M645.2,633.7 C784.2,661 924.4,556.5 943.2,422.3 C910,419.1 848.5,417.7 814,454.4 C779.1,481.1 747.5,512 717,543.6"/>
+    <!-- cârligele din spate: piciorul (de jos în sus), colțul, apoi brațul care coboară spre petala centrală -->
+    <path data-o="5" pathLength="1" d="M448.4,428.5 C415.8,406.7 423.6,355.7 427.2,322.2 C463.7,322.5 500.3,355.8 510,390"/>
+    <path data-o="5" pathLength="1" d="M801.6,428.5 C834.2,406.7 826.4,355.7 822.8,322.2 C786.3,322.5 749.7,355.8 740,390"/>
+  </g>
+</svg>

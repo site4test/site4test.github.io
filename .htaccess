@@ -1,0 +1,49 @@
+# Apache — configurarea portofoliului.
+#
+# Conținutul folderului dist/ se urcă la RĂDĂCINA site-ului (de obicei /var/www/html/).
+# Fișierul acesta merge cu el. (Din 25.09.2026 portofoliul stă la rădăcină, fără /portfolio.)
+#
+# Are nevoie de `AllowOverride All` pentru folderul respectiv în configurarea
+# Apache, altfel e ignorat complet și nu se vede niciun efect.
+
+RewriteEngine On
+RewriteBase /
+
+# Adresele greșite: 404.html trimite la pagina 404 a proiectului (dacă are) sau la portofoliu.
+ErrorDocument 404 /404.html
+
+# Site-ul folosește adrese fără slash final (trailingSlash: 'never').
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} (.+)/$
+RewriteRule ^ %1 [R=301,L]
+
+# /web-sites -> /web-sites/index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.*)$ $1/index.html [L]
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/json
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Fișierele din _astro/ au numele schimbat la fiecare build, deci pot fi
+  # ținute în memorie cât de mult.
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
+
+# HTTPS obligatoriu — se decomentează DUPĂ ce certificatul e instalat pe domeniu.
+# Până atunci butoanele de copiere folosesc metoda de rezervă (vezi Shell.astro).
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]

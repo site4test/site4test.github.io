@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>404</title>
+<noscript><meta http-equiv="refresh" content="0; url=/"></noscript>
+<style>html { background: #0b1020; }</style>
+<script>
+  // GitHub Pages servește O SINGURĂ pagină 404 pentru tot site-ul. Aceasta trimite vizitatorul
+  // la pagina 404 a proiectului în care se afla (dacă proiectul are una, ex. Golden Lotus),
+  // la începutul proiectului dacă nu are, iar în rest la portofoliu. Fără text: nu are ce traduce.
+  (function () {
+    var m = location.pathname.match(/^(.*?\/projects\/[^/]+)(\/|$)/);
+    if (!m) { location.replace('/'); return; }
+    var proiect = m[1], pagina404 = proiect + '/404.html';
+    if (location.pathname === pagina404) { location.replace(proiect + '/'); return; }
+    fetch(pagina404, { method: 'HEAD' })
+      .then(function (r) { location.replace(r.ok ? pagina404 : proiect + '/'); })
+      .catch(function () { location.replace(proiect + '/'); });
+  })();
+</script>
+</head>
+<body></body>
+</html>

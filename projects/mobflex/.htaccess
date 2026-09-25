@@ -1,0 +1,40 @@
+# MobFlex — configurare Apache pentru adrese curate (fără slash final)
+# Necesar doar pe hosting clasic (cPanel/Apache). Netlify/Vercel/Cloudflare Pages nu au nevoie de asta.
+
+RewriteEngine On
+
+# Elimină slash-ul final dacă există (site-ul folosește trailingSlash: "never")
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} (.+)/$
+RewriteRule ^ %1 [R=301,L]
+
+# Servește index.html pentru fiecare folder de pagină (ex: /materiale -> /materiale/index.html)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.*)$ $1/index.html [L]
+
+# Pagina 404 personalizată
+ErrorDocument 404 /404.html
+
+# Compresie și cache pentru fișierele statice
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/json
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
+
+# HTTPS obligatoriu (activează doar după ce certificatul SSL e instalat pe domeniu)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]

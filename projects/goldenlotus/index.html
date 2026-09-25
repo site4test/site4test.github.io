@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="ro" data-theme="aur">
+<head>
+<meta charset="utf-8">
+<script>
+  // O adresă de folder fără „/" la final (…/goldenlotus) ar strica toate căile relative (poze, fonturi): o completăm.
+  (function () { var p = location.pathname; if (!/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) location.replace(p + '/' + location.search + location.hash); })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Golden Lotus — studiu de mișcare</title>
+<link rel="icon" href="lotus.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/woff2/Ysabeau-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="media/hero-lant-aur.webp" as="image" fetchpriority="high">
+<script>
+  // tema și „mai puțină mișcare” se aplică înainte de prima desenare
+  try {
+    var t = localStorage.getItem('gl-theme'); if (t === 'argint' || t === 'aur') document.documentElement.dataset.theme = t;
+    if (localStorage.getItem('gl-motion') === 'reduce') document.documentElement.dataset.motion = 'reduce';
+  } catch (e) {}
+  document.documentElement.classList.add('js');
+  // intro-ul cu picătura de aur: la FIECARE deschidere a paginii (un singur link, fără variante).
+  // Nu rulează doar cu „mai puțină mișcare” sau când adresa duce direct la o secțiune (#…).
+  try {
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'reduce';
+    if (!still && !location.hash)
+      { document.documentElement.classList.add('intro', 'intro-lock'); history.scrollRestoration = 'manual'; }
+  } catch (e) {}
+</script>
+<style>
+@font-face { font-family: "Ysabeau"; src: url("fonts/woff2/Ysabeau-var.woff2") format("woff2"); font-weight: 1 1000; font-style: normal; font-display: swap; }
+@font-face { font-family: "Ysabeau"; src: url("fonts/woff2/Ysabeau-Italic-var.woff2") format("woff2"); font-weight: 1 1000; font-style: italic; font-display: swap; }
+@font-face { font-family: "Ysabeau Office"; src: url("fonts/woff2/YsabeauOffice-var.woff2") format("woff2"); font-weight: 1 1000; font-display: swap; }
+@font-face { font-family: "Forum"; src: url("fonts/woff2/Forum-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+/* ---------- tokeni (BRAND.md §2, §6.1) ---------- */
+:root {
+  --porcelain:#F7F6F2; --paper:#FCFBF8; --mist:#ECEAE4; --champagne:#E4D9C6; --hairline:#D5D1C8;
+  --ink:#0C0B0A; --graphite:#2A2E35; --stone:#65615B;
+  --gold-100:#FEE799; --gold-300:#F5C35E; --gold-500:#DFA63E; --gold-700:#B98325; --gold-900:#714705; --gold-text:#7A5310;
+  --night:#0C0C0D; --night-2:#17181A; --moon:#EEEDEA; --silver-300:#C9CDD3; --silver-500:#9AA0A8; --stone-night:#A29F99; --hairline-night:#34363A;
+
+  --ease-bloom: cubic-bezier(.16,1,.3,1);   /* sosire: decelerare */
+  --ease-exit:  cubic-bezier(.7,0,.84,0);   /* plecare: accelerare */
+  --ease-draw:  cubic-bezier(.65,0,.35,1);
+  --ease-soft:  cubic-bezier(.4,0,.2,1);
+  --ease-press: cubic-bezier(.3,1.4,.5,1);
+  --d-ui:320ms; --d-bloom:1400ms; --d-draw:1100ms;
+
+  --f-display: "Ysabeau", "Segoe UI", sans-serif;
+  --f-text: "Ysabeau Office", "Segoe UI", sans-serif;
+  --f-inscr: "Forum", Georgia, serif;
+  --t-hero: clamp(2.7rem, 1rem + 5.4vw, 6.6rem);
+  --t-h2: clamp(2.3rem, 1rem + 4.4vw, 5.4rem);
+  --gutter: clamp(20px, 5vw, 72px);
+  --hdr-h: 68px;
+  /* straturi */
+  --z-preview: 30; --z-hdr: 40; --z-flag: 50; --z-cview: 60;
+}
+:root, [data-theme="aur"] {
+  --bg:var(--porcelain); --surface:var(--paper); --surface-2:var(--mist);
+  --fg:var(--ink); --fg-muted:var(--stone); --line:var(--hairline);
+  --metal-text:var(--gold-text); --band-a:var(--gold-700); --band-b:var(--gold-100);
+  --btn-bg:var(--ink); --btn-fg:var(--porcelain); --lotus-paint:var(--ink); --light-paint:#E2AC45; --light-glow:rgba(233,178,72,.85);
+  color-scheme: light;
+}
+[data-theme="argint"] {
+  --bg:var(--night); --surface:var(--night-2); --surface-2:var(--graphite);
+  --fg:var(--moon); --fg-muted:var(--stone-night); --line:var(--hairline-night);
+  --metal-text:var(--silver-300); --band-a:var(--silver-500); --band-b:#FFFFFF;
+  --btn-bg:var(--moon); --btn-fg:var(--night); --lotus-paint:var(--moon); --light-paint:#FFFFFF; --light-glow:rgba(255,255,255,.95);
+  color-scheme: dark;
+}
+
+/* ---------- bază ---------- */
+*,*::before,*::after { box-sizing: border-box; }
+html { background: var(--bg); color: var(--fg); overflow-x: clip; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--hdr-h) + 20px); }
+html.is-locked { overflow: hidden; }
+body { margin: 0; font: 400 1.0625rem/1.6 var(--f-text); background: var(--bg); color: var(--fg);
+  transition: background-color 600ms var(--ease-soft), color 600ms var(--ease-soft); }
+html[data-theme-switching] * { transition: none !important; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+[hidden] { display: none !important; }
+h1, h2, h3 { text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; border-radius: 2px; }
+.skip { position: absolute; left: 12px; top: -60px; padding: 10px 16px; background: var(--btn-bg); color: var(--btn-fg); border-radius: 999px; z-index: 100; text-decoration: none; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { width: min(100% - 2 * var(--gutter), 1360px); margin-inline: auto; }
+.label { font: 400 .75rem/1.3 var(--f-inscr); letter-spacing: .32em; text-transform: uppercase; color: var(--fg-muted); margin: 0; }
+.label b { font-weight: 400; color: var(--metal-text); }
+
+/* ---------- butoane (pilule — regula casei) ---------- */
+.pill { position: relative; overflow: hidden; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: .6em;
+  min-height: 48px; padding: 0 1.7em; border-radius: 999px; border: 1px solid var(--fg);
+  font: 540 .95rem/1 var(--f-text); letter-spacing: .02em; text-decoration: none; cursor: pointer;
+  background: transparent; color: var(--fg);
+  transition: background-color var(--d-ui) var(--ease-soft), color var(--d-ui) var(--ease-soft), border-color var(--d-ui), transform 400ms var(--ease-press); }
+.pill:active { transform: scale(.97); }
+.pill--solid { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.pill:not(.pill--solid):hover { background: var(--fg); color: var(--bg); }
+.pill::after { /* lumina care alunecă o dată (BRAND §6.2 #5) */
+  content: ""; position: absolute; z-index: -1; inset: -20% auto -20% 0; width: 45%;
+  background: linear-gradient(100deg, transparent, color-mix(in oklab, var(--band-b) 55%, transparent), transparent);
+  transform: translateX(-140%) skewX(-18deg); pointer-events: none; }
+.pill--solid:hover::after { animation: gl-btnsheen 900ms var(--ease-draw); }
+@keyframes gl-btnsheen { to { transform: translateX(340%) skewX(-18deg); } }
+.pill[aria-busy="true"] { pointer-events: none; opacity: .75; }
+.pill--sm { min-height: 42px; padding: 0 1.25em; font-size: .88rem; }
+.link-arrow { display: inline-flex; align-items: center; gap: .55em; min-height: 44px; font: 520 .95rem/1 var(--f-text); text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
+.link-arrow span { transition: transform var(--d-ui) var(--ease-bloom); }
+.link-arrow:hover span { transform: translateX(6px); }
+.link-arrow--back:hover span { transform: translateX(-6px); }
+
+/* ---------- lotusul (linii) ---------- */
+.ln-lines { fill: none; stroke: var(--lotus-paint); stroke-linecap: round; stroke-linejoin: miter; stroke-miterlimit: 12; }
+.ln-lines path { stroke-dasharray: 1 1.1; stroke-dashoffset: 0; }
+[data-o="1"] { --o: 0; } [data-o="2"] { --o: 1; } [data-o="3"] { --o: 2; } [data-o="4"] { --o: 3; } [data-o="5"] { --o: 4; }
+.js [data-draw] .ln-lines path { stroke-dashoffset: 1.001; }
+.js [data-draw].is-on .ln-lines path { animation: gl-draw var(--d-draw) var(--ease-draw) forwards; animation-delay: calc(var(--draw-delay, 250ms) + var(--o) * 170ms); }
+@keyframes gl-draw { to { stroke-dashoffset: 0; } }
+/* logo-ul mare: liniile stau mereu pe loc; peste ele trec două lumini (aurii pe Aur, albe pe Argint), din JS */
+#lout .ln-light { fill: none; stroke: var(--light-paint); stroke-linecap: round; filter: drop-shadow(0 0 3px var(--light-glow)); }
+#lout .ln-light path { opacity: 0; }
+#lout .ln-dot { fill: var(--lotus-paint); }
+#lout .ln-dot-light { fill: var(--light-paint); opacity: 0; filter: drop-shadow(0 0 5px var(--light-glow)); }
+
+/* ---------- antet ---------- */
+.hdr { position: fixed; inset: 0 0 auto; z-index: var(--z-hdr); transition: transform 500ms var(--ease-bloom), background-color var(--d-ui), opacity 800ms var(--ease-soft); }
+.hdr.is-solid { background: color-mix(in oklab, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
+.hdr.is-hidden { transform: translateY(-100%); box-shadow: none; }
+.hdr__in { height: var(--hdr-h); display: flex; align-items: center; gap: 30px; }
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; min-height: 44px; }
+.brand svg { width: 34px; height: auto; overflow: visible; }
+.brand .ln-lines { stroke-width: 20; }
+.brand span { font: 400 .8rem/1 var(--f-inscr); letter-spacing: .34em; padding-top: 2px; }
+.nav { display: flex; gap: 28px; margin-left: auto; }
+.nav a { font: 480 .92rem/1 var(--f-text); text-decoration: none; padding: 14px 0; position: relative; color: var(--fg-muted); transition: color var(--d-ui); }
+.nav a:hover, .nav a[aria-current="true"] { color: var(--fg); }
+.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 500ms var(--ease-bloom); }
+.nav a:hover::after, .nav a[aria-current="true"]::after { transform: scaleX(1); transform-origin: left; }
+.metal { display: inline-flex; align-items: center; gap: 2px; }
+.metal button { position: relative; min-height: 44px; padding: 0 8px; border: 0; background: none; cursor: pointer; font: 400 .68rem/1 var(--f-inscr); letter-spacing: .28em; color: var(--fg-muted); transition: color var(--d-ui); }
+.metal button[aria-pressed="true"] { color: var(--fg); }
+.metal button::after { content: ""; position: absolute; left: 50%; bottom: 9px; width: 4px; height: 4px; margin-left: -4px; border-radius: 50%; background: var(--metal-text); transform: scale(0); transition: transform var(--d-ui) var(--ease-bloom); }
+.metal button[aria-pressed="true"]::after { transform: scale(1); }
+.metal i { font-style: normal; color: var(--line); }
+.hdr .pill { transition: background-color 500ms var(--ease-soft), color 500ms var(--ease-soft), border-color 500ms; }
+.hdr.cta-solid .pill { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+@media (max-width: 900px) { .nav { display: none; } .metal { margin-left: auto; } .hdr__in { gap: 10px; } }
+@media (max-width: 520px) { .brand span { display: none; } }
+
+/* ---------- 1. primul ecran: lotusul ca fereastră ---------- */
+.stage { position: relative; height: 290vh; }
+.stage__sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.lotus-window { position: absolute; inset: 0; -webkit-clip-path: url(#lotusClip); clip-path: url(#lotusClip); }
+.lotus-window img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; transform: scale(var(--ks, 1.12)); transform-origin: 50% 45%; }
+.lotus-window::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.5), transparent 42%); opacity: var(--cap, 0); }
+.lotus-outline { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: var(--ol, 1); }
+.stage__copy { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: calc(var(--hdr-h) + 8px) var(--gutter) 40px; gap: clamp(14px, 2.4vh, 26px); opacity: var(--co, 1); transform: translateY(var(--cy, 0px)); }
+.lotus-slot { height: min(44svh, 80vw * 630 / 690); aspect-ratio: 690 / 630; flex: none; }
+.lotus-slot svg { width: 100%; height: 100%; }
+.js .lotus-slot svg { display: none; }
+.stage h1 { margin: 6px 0 0; font: 200 var(--t-hero)/1 var(--f-display); letter-spacing: -.02em; transition: opacity 900ms var(--ease-soft); }
+.stage h1 .ln { display: block; white-space: nowrap; }
+.stage h1 br { display: none; }
+@media (max-width: 700px) { .stage h1 br { display: inline; } }
+.stage h1 em { font-style: italic; font-weight: inherit; }
+/* --shift scurtează întârzierile când textul apare după intro (lotusul a ocupat deja primele secunde) */
+.js .stage h1 .ln { animation: gl-wght var(--d-bloom) var(--ease-bloom) both; animation-delay: max(0ms, calc(650ms - var(--shift, 0ms))); }
+@keyframes gl-wght { from { font-weight: 40; letter-spacing: .035em; } to { font-weight: 200; letter-spacing: -.02em; } }
+.accent { background: linear-gradient(105deg, var(--fg) 0 40%, var(--band-a) 46%, var(--band-b) 50%, var(--band-a) 54%, var(--fg) 60% 100%);
+  background-size: 320% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.js .accent { animation: gl-textsheen 1700ms var(--ease-draw) both; animation-delay: calc(1900ms - var(--shift, 0ms)); }
+@keyframes gl-textsheen { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@media (forced-colors: active) { .accent { background: none; color: CanvasText; } }
+.stage__sub { margin: 0; max-width: 46ch; color: var(--fg-muted); font-size: 1.08rem; text-align: center; text-wrap: balance; }
+.stage__sub .br-m { display: none; }
+@media (max-width: 520px) { .stage__sub .br-m { display: inline; } }
+.stage__cta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 28px; }
+.js .stage .fade-up { animation: gl-up 1000ms var(--ease-bloom) both; animation-delay: calc(var(--dl, 1300ms) - var(--shift, 0ms)); }
+@keyframes gl-up { from { transform: translateY(12px); opacity: .001; } }
+.stage__cap { position: absolute; z-index: 3; left: var(--gutter); bottom: clamp(28px, 7vh, 72px); color: #fff; max-width: 34ch; margin: 0;
+  opacity: var(--cap, 0); transform: translateY(calc((1 - var(--cap, 0)) * 16px)); pointer-events: none; }
+.stage__cap span { display: block; font: 400 .72rem/1.3 var(--f-inscr); letter-spacing: .32em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+.stage__cap strong { display: block; margin-top: .45em; font: 200 clamp(1.8rem, 1rem + 2.6vw, 3.2rem)/1.05 var(--f-display); text-shadow: 0 1px 24px rgba(0,0,0,.3); }
+
+/* ---------- 0. intro (o dată pe sesiune): picătura de aur cade pe linie, stropește, lotusul iese din punctul de impact ---------- */
+.intro-fx { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; display: none; }
+html.intro-played .intro-fx { display: block; }
+.fx-ring { fill: none; stroke: var(--gold-500); stroke-linecap: round; }
+#fx-spl ellipse { fill: var(--gold-500); }
+#fx-drop path { fill: url(#g-drop-gold); }
+#fx-glint { fill: url(#g-glint-gold); }
+html.intro-lock { overflow: hidden; }
+html.intro .hdr, html.intro .flag, html.intro .stage h1 { opacity: 0; pointer-events: none; }
+html.intro .lotus-window { opacity: 0; }
+html.intro .stage h1 .ln, html.intro .stage .accent, html.intro .stage .fade-up { animation-play-state: paused; }
+html.intro-played { --shift: 1100ms; }
+.flag { transition: opacity 800ms var(--ease-soft); }
+
+/* ---------- 2. manifest ---------- */
+.manifest { padding: clamp(110px, 16vw, 230px) 0; text-align: center; }
+.manifest h2 { margin: 18px auto 0; font: 200 var(--t-h2)/1.02 var(--f-display); letter-spacing: -.02em; max-width: 21ch; }
+.manifest h2 .ln { display: block; }
+.bloom-line { font-weight: 200; }
+.js [data-bloom] .bloom-line { font-weight: 40; letter-spacing: .03em; opacity: .25; filter: blur(5px); transition: font-weight var(--d-bloom) var(--ease-bloom), letter-spacing var(--d-bloom) var(--ease-bloom), opacity 900ms var(--ease-soft), filter 900ms var(--ease-soft); transition-delay: calc(var(--i, 0) * 140ms); }
+.js [data-bloom].is-in .bloom-line { font-weight: 200; letter-spacing: -.02em; opacity: 1; filter: none; }
+.manifest p { margin: 28px auto 0; max-width: 44ch; color: var(--fg-muted); }
+
+/* ---------- 3. colecțiile ---------- */
+.coll { padding-bottom: clamp(110px, 14vw, 200px); }
+.coll__head { display: flex; justify-content: space-between; align-items: end; gap: 24px; border-bottom: 1px solid var(--line); padding-bottom: 22px; }
+.coll__head h2 { margin: 12px 0 0; font: 200 clamp(1.6rem, 1rem + 1.6vw, 2.4rem)/1.1 var(--f-display); }
+.coll__head p { margin: 0; color: var(--fg-muted); font-size: .92rem; max-width: 30ch; text-align: right; }
+@media (max-width: 700px) { .coll__head { flex-direction: column; align-items: flex-start; gap: 10px; } .coll__head p { text-align: left; } }
+.coll ol { list-style: none; margin: 0; padding: 0; }
+.coll li { border-bottom: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 4.2rem 1fr auto; align-items: center; gap: 12px; padding: clamp(14px, 2.2vw, 26px) 0; text-decoration: none; cursor: pointer; transition: opacity 500ms var(--ease-soft); }
+.row .num { font: 400 .8rem/1 var(--f-inscr); letter-spacing: .2em; color: var(--fg-muted); transition: color var(--d-ui); }
+.row .name { font: 140 clamp(2.2rem, 1rem + 5.4vw, 6.4rem)/1 var(--f-display); letter-spacing: -.02em; transition: font-weight 700ms var(--ease-bloom), transform 700ms var(--ease-bloom); }
+.row .meta { display: inline-flex; align-items: center; gap: 14px; font: 400 .72rem/1 var(--f-inscr); letter-spacing: .26em; text-transform: uppercase; color: var(--fg-muted); }
+.row .meta svg { width: 18px; height: 18px; opacity: 0; transform: translateX(-8px); transition: opacity var(--d-ui), transform 500ms var(--ease-bloom); }
+.coll ol.is-hovering .row:not(.is-hot) { opacity: .3; }
+.row.is-hot .name, .row:focus-visible .name { font-weight: 380; transform: translateX(12px); }
+.row.is-hot .num, .row:focus-visible .num { color: var(--metal-text); }
+.row.is-hot .meta svg, .row:focus-visible .meta svg { opacity: 1; transform: none; }
+.row .thumb { display: none; }
+/* previzualizarea stă pe loc (nu urmează cursorul): coloana din dreapta, la mijlocul ecranului cât derulezi lista */
+.coll__body { display: grid; }
+.coll__body > * { grid-area: 1 / 1; }
+.preview { --pw: clamp(220px, 19vw, 300px); position: sticky; top: calc(50vh - var(--pw) * .625); align-self: start; justify-self: end; z-index: 2;
+  width: var(--pw); aspect-ratio: 4 / 5; pointer-events: none; overflow: hidden;
+  clip-path: inset(50% 0 50% 0); transition: clip-path 380ms var(--ease-exit); }
+.preview.is-on { clip-path: inset(0 0 0 0); transition: clip-path 750ms var(--ease-bloom); }
+.preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 450ms var(--ease-soft), transform 1200ms var(--ease-bloom); }
+.preview img.is-old { opacity: 0; transform: scale(1.06); }
+.preview span { position: absolute; left: 14px; bottom: 12px; z-index: 1; color: #fff; font: 400 .66rem/1 var(--f-inscr); letter-spacing: .28em; text-transform: uppercase; text-shadow: 0 1px 12px rgba(0,0,0,.45); }
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+  .preview { display: none; }
+  .row { grid-template-columns: 2.4rem 1fr 60px; }
+  .row .meta { display: none; }
+  .row .thumb { display: block; width: 60px; aspect-ratio: 4 / 5; object-fit: cover; }
+}
+
+/* ---------- vederea colecției (element comun cu previzualizarea) ---------- */
+.cview { position: fixed; inset: 0; z-index: var(--z-cview); display: grid; grid-template-columns: 1fr 1fr; }
+.cview__bg { position: absolute; inset: 0; background: var(--bg); }
+.cview__media { position: relative; overflow: hidden; transform-origin: 0 0; will-change: transform, clip-path; }
+.cview__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 500ms var(--ease-soft); }
+.cview__media img.is-old { opacity: 0; }
+.cview__media small { position: absolute; left: 16px; bottom: 14px; color: rgba(255,255,255,.8); font-size: .72rem; text-shadow: 0 1px 10px rgba(0,0,0,.4); }
+.cview__body { position: relative; overflow: auto; padding: calc(var(--hdr-h) + 20px) clamp(24px, 6vw, 110px) 40px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+.cview__body > * { margin: 0; }
+.cview h2 { font: 200 clamp(3rem, 1rem + 5.6vw, 7.4rem)/.95 var(--f-display); letter-spacing: -.025em; outline: none; }
+.cview__text { max-width: 40ch; color: var(--fg-muted); font-size: 1.1rem; }
+.cview__cta { display: flex; flex-wrap: wrap; gap: 12px 26px; align-items: center; }
+.cview__nav { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 10px; }
+.cview__nav button { font-size: .88rem; }
+.cview__nav b { font: 400 .7rem/1 var(--f-inscr); letter-spacing: .22em; color: var(--fg-muted); font-weight: 400; }
+.note { font-size: .82rem; color: var(--fg-muted); border-left: 1px solid var(--line); padding-left: 12px; max-width: 44ch; }
+.swap { transition: opacity 260ms var(--ease-soft), transform 420ms var(--ease-bloom); }
+.swap.is-out { opacity: 0; transform: translateY(8px); }
+@media (max-width: 900px) {
+  .cview { grid-template-columns: 1fr; grid-template-rows: 52svh auto; overflow: auto; }
+  .cview__body { overflow: visible; padding-top: 28px; justify-content: flex-start; }
+}
+
+/* ---------- 4. verighete ---------- */
+.rings { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 7vw, 120px); align-items: center; padding-bottom: clamp(80px, 10vw, 140px); }
+.rings__media { position: relative; padding-bottom: 14%; }
+.rv { margin: 0; overflow: hidden; clip-path: inset(0 0 0 0); transition: clip-path 1300ms var(--ease-bloom); }
+.rv img { width: 100%; height: 100%; object-fit: cover; transition: transform 1800ms var(--ease-bloom); }
+.js .rings__media:not(.is-in) .rv { clip-path: inset(100% 0 0 0); }
+.js .rings__media:not(.is-in) .rv img { transform: scale(1.18); }
+.rv--main { width: 78%; aspect-ratio: 4 / 5; }
+.rv--small { position: absolute; right: 0; bottom: 0; width: 44%; aspect-ratio: 1; transition-delay: 220ms; transform: translateY(var(--par, 0px)); }
+.rv--small img { object-position: 60% 55%; }
+.rings h2 { margin: 16px 0 0; font: 200 var(--t-h2)/1.02 var(--f-display); letter-spacing: -.02em; }
+.rings h2 em { font-style: italic; }
+.rings h2 .ln { display: block; }
+.rings__copy > p:not(.label):not(.note) { max-width: 40ch; color: var(--fg-muted); margin: 26px 0 32px; }
+.rings .note { margin-top: 28px; }
+@media (max-width: 900px) { .rings { grid-template-columns: 1fr; } .rings__media { max-width: 520px; } }
+
+/* ---------- 5. „20 de ani” ---------- */
+.years { display: grid; grid-template-columns: auto 1fr; align-items: end; gap: clamp(20px, 4vw, 64px); padding: clamp(36px, 4.5vw, 64px) 0; border-block: 1px solid var(--line); }
+.years .big { font: 80 clamp(6rem, 3rem + 13vw, 15rem)/.8 var(--f-display); letter-spacing: -.04em; font-variant-numeric: lining-nums tabular-nums; }
+.years h2 { margin: 0 0 .4em; font: 200 clamp(1.8rem, 1rem + 2.4vw, 3.2rem)/1.05 var(--f-display); }
+.years p { margin: 0; max-width: 42ch; color: var(--fg-muted); }
+.tbc { color: var(--fg-muted); font-style: italic; }
+@media (max-width: 700px) { .years { grid-template-columns: 1fr; } }
+
+/* ---------- 6. magazine ---------- */
+.stores { padding: clamp(80px, 10vw, 140px) 0 clamp(56px, 7vw, 96px); }
+.stores h2 { margin: 12px 0 0; font: 200 clamp(1.8rem, 1rem + 2.4vw, 3.2rem)/1.05 var(--f-display); }
+.stores__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 36px; }
+.store { background: var(--bg); padding: clamp(24px, 4vw, 56px); display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: start; }
+.store h3 { margin: 0 0 14px; font: 200 clamp(2rem, 1rem + 2.6vw, 3.4rem)/1 var(--f-display); }
+.store dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 22px; font-variant-numeric: lining-nums; }
+.store dt { font: 400 .7rem/1.9 var(--f-inscr); letter-spacing: .24em; text-transform: uppercase; color: var(--fg-muted); }
+.store dd { margin: 0; }
+.store img { width: clamp(110px, 12vw, 170px); height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: 62% 46%; }
+.nw { white-space: nowrap; }
+@media (max-width: 800px) { .stores__grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .store { grid-template-columns: 1fr; } .store img { width: 100%; aspect-ratio: 16 / 10; object-position: 50% 40%; } }
+
+/* ---------- subsol (compact) ---------- */
+.ftr { padding: clamp(24px, 3vw, 40px) 0 22px; text-align: center; display: grid; justify-items: center; gap: 10px; }
+.ftr svg { width: 60px; overflow: visible; }
+.ftr .ln-lines { stroke-width: 16; }
+.ftr .word { font: 400 .88rem/1 var(--f-inscr); letter-spacing: .4em; margin-top: 4px; }
+.ftr .rule { width: 96px; height: 1px; background: var(--line); }
+.ftr .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--fg-muted); }
+.ftr__row { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 24px; font-size: .84rem; color: var(--fg-muted); }
+.ftr__row button { min-height: 44px; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; cursor: pointer; }
+.ftr__row button[aria-pressed="true"] { border-color: var(--fg); color: var(--fg); }
+
+/* ---------- sertarul de rezervare ---------- */
+.drawer { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100dvh; max-height: none; max-width: none; width: min(460px, 100vw); border: 0; border-left: 1px solid var(--line); padding: 0; background: var(--surface); color: var(--fg);
+  transform: translateX(100%); transition: transform 380ms var(--ease-exit), overlay 380ms allow-discrete, display 380ms allow-discrete; }
+.drawer[open] { transform: none; transition: transform 620ms var(--ease-bloom), overlay 620ms allow-discrete, display 620ms allow-discrete; }
+@starting-style { .drawer[open] { transform: translateX(100%); } }
+.drawer::backdrop { background: rgba(8,8,9,0); -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); transition: background-color 400ms, backdrop-filter 400ms, overlay 400ms allow-discrete, display 400ms allow-discrete; }
+.drawer[open]::backdrop { background: rgba(8,8,9,.38); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+@starting-style { .drawer[open]::backdrop { background: rgba(8,8,9,0); backdrop-filter: blur(0); } }
+@media (max-width: 600px) {
+  .drawer { inset: auto 0 0 0; width: 100vw; height: min(92dvh, 780px); border-left: 0; border-top: 1px solid var(--line); transform: translateY(100%); }
+  @starting-style { .drawer[open] { transform: translateY(100%); } }
+}
+.drawer__in { height: 100%; overflow: auto; padding: 26px clamp(22px, 5vw, 40px) 36px; }
+.drawer__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.drawer__top > svg { width: 58px; overflow: visible; }
+.drawer__top .ln-lines { stroke-width: 14; }
+.x { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: none; cursor: pointer; display: grid; place-items: center; transition: border-color var(--d-ui), transform 400ms var(--ease-press); }
+.x svg { display: block; width: 14px; height: 14px; }
+.x:hover { border-color: var(--fg); } .x:active { transform: scale(.94); }
+/* ritm egal: eticheta → butoane = butoane → eticheta următoare (butoanele stau exact la mijloc) */
+#res-form { --rhythm: 18px; display: grid; gap: var(--rhythm); }
+#res-form h2 { margin: 0; font: 200 2.4rem/1 var(--f-display); }
+.ctx { margin: -8px 0 0; color: var(--metal-text); font: 400 .72rem/1.4 var(--f-inscr); letter-spacing: .24em; text-transform: uppercase; }
+.field { display: grid; }
+.field > span { margin-bottom: 2px; }
+.field > span, legend { font: 400 .7rem/1 var(--f-inscr); letter-spacing: .26em; text-transform: uppercase; color: var(--fg-muted); padding: 0; }
+/* legend plutitor = element obișnuit de grilă, deci primește aceeași distanță ca restul */
+legend { float: left; width: 100%; margin: 0 0 var(--rhythm); }
+.field input { min-height: 50px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--fg); font: 400 1.05rem var(--f-text); padding: 0 2px; border-radius: 0; transition: border-color var(--d-ui); }
+.field input:hover { border-bottom-color: var(--fg-muted); }
+.field input:focus { outline: none; border-bottom-color: var(--fg); }
+.field input:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+.field input[aria-invalid="true"] { border-bottom-color: #A1301F; }
+[data-theme="argint"] .field input[aria-invalid="true"] { border-bottom-color: #E08A7C; }
+.err { font-size: .85rem; line-height: 1.3; color: #A1301F; }
+.err:not(:empty) { margin-top: 8px; }
+[data-theme="argint"] .err { color: #F0A596; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips input:disabled + span { opacity: .38; text-decoration: line-through; text-decoration-thickness: 1px; }
+.chips label:has(input:disabled) { pointer-events: none; }
+/* „Altă zi” deschide șirul de zile (se desfășoară pe înălțime, fără salt) */
+.more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 520ms var(--ease-bloom); }
+.more.is-open { grid-template-rows: 1fr; }
+.more__in { min-height: 0; overflow: hidden; }
+.days { display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; gap: 4px; padding-top: 12px; }
+/* marginea se estompează doar în partea în care mai sunt zile ascunse */
+.days__track { --fl: 0px; --fr: 18px; display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 3px 2px;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 var(--fl) calc(100% - var(--fr)), transparent); mask: linear-gradient(90deg, transparent, #000 var(--fl) calc(100% - var(--fr)), transparent); }
+.days__track.at-start { --fl: 0.01px; } .days__track:not(.at-start) { --fl: 18px; }
+.days__track.at-end { --fr: 0.01px; }
+.days__track::-webkit-scrollbar { display: none; }
+.day { position: relative; flex: none; scroll-snap-align: start; }
+.day input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.day span { display: grid; justify-items: center; gap: 3px; width: 52px; padding: 9px 0 8px; border: 1px solid var(--line); border-radius: 999px; transition: background-color var(--d-ui), color var(--d-ui), border-color var(--d-ui); }
+.day small { font: 400 .6rem/1 var(--f-inscr); letter-spacing: .16em; text-transform: uppercase; color: var(--fg-muted); transition: color var(--d-ui); }
+.day b { font: 400 1.05rem/1 var(--f-text); font-variant-numeric: lining-nums; }
+.day:hover span { border-color: var(--fg-muted); }
+.day input:checked + span { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.day input:checked + span small { color: inherit; opacity: .75; }
+.day input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 2px; }
+.days__nav { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: none; cursor: pointer; display: grid; place-items: center; transition: border-color var(--d-ui), opacity var(--d-ui); }
+.days__nav:hover { border-color: var(--fg); }
+.days__nav:disabled { opacity: .3; cursor: default; border-color: var(--line); }
+.days__nav svg { width: 12px; height: 12px; }
+@media (hover: none) { .days { grid-template-columns: 1fr; } .days__nav { display: none; } }
+.chips label { position: relative; }
+.chips input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chips span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--line); border-radius: 999px; font-size: .92rem; transition: background-color var(--d-ui), color var(--d-ui), border-color var(--d-ui); }
+.chips label:hover span { border-color: var(--fg-muted); }
+.chips input:checked + span { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.chips input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 3px; }
+.js .drawer[open] .stagger > * { animation: gl-up 700ms var(--ease-bloom) both; animation-delay: calc(160ms + var(--i, 0) * 55ms); }
+.demo-note { font-size: .8rem; color: var(--fg-muted); margin: 0; }
+.done { text-align: center; display: grid; justify-items: center; gap: 14px; padding: 60px 0; }
+.done svg { width: 90px; overflow: visible; }
+.done .ln-lines { stroke-width: 12; }
+.done h3 { font: 200 3rem/1 var(--f-display); margin: 0; outline: none; }
+.done__sum { margin: 0; font: 400 .72rem/1.6 var(--f-inscr); letter-spacing: .22em; text-transform: uppercase; color: var(--metal-text); }
+
+/* resetare instantanee a unei apariții, ca să se poată juca din nou la următoarea trecere */
+.no-anim, .no-anim * { transition: none !important; animation: none !important; }
+
+/* ---------- eticheta de studiu ---------- */
+.flag { position: fixed; right: 12px; bottom: 12px; z-index: var(--z-flag); margin: 0; font: 400 .66rem/1.3 var(--f-text); letter-spacing: .04em; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--fg-muted); max-width: calc(100vw - 24px); }
+@media (max-width: 600px) { .flag { bottom: auto; top: 76px; font-size: .6rem; } }
+
+/* ---------- mai puțină mișcare ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  .stage { height: auto; } .stage__sticky { position: relative; height: 100svh; }
+}
+[data-motion="reduce"] *, [data-motion="reduce"] *::before, [data-motion="reduce"] *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
+[data-motion="reduce"] .stage { height: auto; } [data-motion="reduce"] .stage__sticky { position: relative; height: 100svh; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<!-- resurse comune: aurul picăturii + silueta lotusului (umplută) pentru fereastra foto -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-drop-gold" x1="0" y1="0" x2=".9" y2="1">
+      <stop offset="0" stop-color="#FEE799"/><stop offset=".35" stop-color="#F5C35E"/><stop offset=".7" stop-color="#DFA63E"/><stop offset="1" stop-color="#8C6012"/>
+    </linearGradient>
+    <radialGradient id="g-glint-gold">
+      <stop offset="0" stop-color="#FFFBEA" stop-opacity=".95"/><stop offset=".3" stop-color="#F5C35E" stop-opacity=".4"/><stop offset="1" stop-color="#F5C35E" stop-opacity="0"/>
+    </radialGradient>
+    <!-- fereastra foto = forma logo-ului dintr-o linie: petalele și apa sunt închise exact pe linie; cârligele și frunzele
+         de la bază sunt panglici subțiri în jurul liniei. Uniunea copiilor = lotusul întreg. -->
+    <clipPath id="lotusClip" clipPathUnits="userSpaceOnUse"><!-- transform pus din JS; <g> nu e permis într-un clipPath -->
+        <path d="M625,626.9 C588.5,570.7 527.9,520.4 529.5,445 C525.5,358.2 567.3,284.9 625,226.1 C682.7,284.9 724.5,358.2 720.5,445 C722.1,520.4 661.5,570.7 625,626.9 Z"/>
+        <path d="M604.8,633.7 C465.8,661 325.6,556.5 306.8,422.3 C340,419.1 401.5,417.7 436,454.4 C470.9,481.1 502.5,512 533,543.6 L554.9,530.5 C575.4,564.5 604.1,594.8 625,626.9 Z"/>
+        <path d="M645.2,633.7 C784.2,661 924.4,556.5 943.2,422.3 C910,419.1 848.5,417.7 814,454.4 C779.1,481.1 747.5,512 717,543.6 L695.1,530.5 C674.6,564.5 645.9,594.8 625,626.9 Z"/>
+        <path d="M625,694.3 C564.8,634.8 460.6,668.1 437.6,726.8 C484.7,752 572.8,743.3 625,694.3 Z"/>
+        <path d="M625,694.3 C685.2,634.8 789.4,668.1 812.4,726.8 C765.3,752 677.2,743.3 625,694.3 Z"/>
+        <path d="M448.6,428.3 L447.1,425.3 L445.4,423.0 L443.8,420.7 L442.3,418.5 L440.9,416.2 L439.7,414.0 L438.5,411.6 L437.5,409.3 L436.6,406.9 L435.8,404.5 L435.1,402.0 L434.4,399.4 L433.9,396.9 L433.4,394.2 L433.0,391.6 L432.7,388.8 L432.5,386.1 L432.3,383.3 L432.2,380.5 L432.1,377.6 L431.9,374.8 L431.8,371.9 L431.7,369.0 L431.7,366.0 L431.8,363.1 L431.8,360.1 L432.0,357.1 L432.1,354.2 L432.3,351.2 L432.6,348.3 L432.8,345.3 L433.1,342.4 L433.4,339.5 L433.7,336.7 L434.0,333.9 L434.3,331.1 L434.6,328.4 L434.9,325.7 L435.2,323.1 L419.2,321.3 L419.0,323.9 L418.7,326.6 L418.4,329.3 L418.1,332.1 L417.7,335.0 L417.4,337.9 L417.2,340.9 L416.9,343.9 L416.6,347.0 L416.4,350.1 L416.2,353.2 L416.0,356.3 L415.9,359.5 L415.8,362.7 L415.7,365.9 L415.7,369.1 L415.8,372.4 L415.9,375.6 L416.1,378.8 L416.5,382.0 L417.1,385.2 L417.7,388.3 L418.5,391.5 L419.3,394.5 L420.3,397.6 L421.3,400.5 L422.5,403.5 L423.9,406.3 L425.3,409.1 L426.9,411.7 L428.6,414.3 L430.4,416.8 L432.5,419.1 L434.6,421.3 L436.9,423.4 L439.4,425.2 L442.0,426.9 L444.9,428.2 L448.2,428.7 Z"/>
+        <path d="M427.1,330.2 L429.6,330.3 L432.0,330.5 L434.5,330.8 L436.9,331.2 L439.4,331.7 L441.9,332.3 L444.3,333.0 L446.8,333.8 L449.2,334.7 L451.7,335.7 L454.1,336.8 L456.5,338.0 L458.8,339.3 L461.2,340.7 L463.5,342.1 L465.8,343.6 L468.0,345.2 L470.2,346.9 L472.4,348.6 L474.6,350.3 L476.8,352.0 L479.0,353.8 L481.1,355.6 L483.2,357.5 L485.3,359.4 L487.3,361.4 L489.2,363.5 L491.1,365.5 L493.0,367.7 L494.8,369.8 L496.5,372.0 L498.2,374.2 L499.8,376.5 L501.4,378.7 L502.9,381.0 L504.4,383.3 L505.9,385.6 L507.5,387.9 L509.7,390.1 L510.3,389.9 L510.9,386.8 L510.7,383.9 L510.2,381.0 L509.5,378.1 L508.6,375.2 L507.6,372.3 L506.5,369.5 L505.3,366.7 L503.9,363.9 L502.4,361.2 L500.8,358.5 L499.2,355.8 L497.4,353.1 L495.5,350.6 L493.6,348.0 L491.5,345.5 L489.4,343.1 L487.2,340.7 L485.0,338.4 L482.6,336.2 L480.1,334.2 L477.5,332.3 L474.8,330.4 L472.1,328.6 L469.4,326.9 L466.6,325.3 L463.8,323.8 L460.9,322.4 L458.0,321.1 L455.1,319.8 L452.1,318.7 L449.1,317.7 L446.0,316.8 L443.0,316.1 L439.9,315.4 L436.7,314.9 L433.6,314.5 L430.4,314.3 L427.3,314.2 Z"/>
+        <path d="M435.2,322.2 L434.8,324.7 L433.7,326.9 L431.9,328.7 L429.7,329.8 L427.2,330.2 L424.7,329.8 L422.5,328.7 L420.7,326.9 L419.6,324.7 L419.2,322.2 L419.6,319.7 L420.7,317.5 L422.5,315.7 L424.7,314.6 L427.2,314.2 L429.7,314.6 L431.9,315.7 L433.7,317.5 L434.8,319.7 Z"/>
+        <path d="M801.8,428.7 L805.1,428.2 L808.0,426.9 L810.6,425.2 L813.1,423.4 L815.4,421.3 L817.5,419.1 L819.6,416.8 L821.4,414.3 L823.1,411.7 L824.7,409.1 L826.1,406.3 L827.5,403.5 L828.7,400.5 L829.7,397.6 L830.7,394.5 L831.5,391.5 L832.3,388.3 L832.9,385.2 L833.5,382.0 L833.9,378.8 L834.1,375.6 L834.2,372.4 L834.3,369.1 L834.3,365.9 L834.2,362.7 L834.1,359.5 L834.0,356.3 L833.8,353.2 L833.6,350.1 L833.4,347.0 L833.1,343.9 L832.8,340.9 L832.6,337.9 L832.3,335.0 L831.9,332.1 L831.6,329.3 L831.3,326.6 L831.0,323.9 L830.8,321.3 L814.8,323.1 L815.1,325.7 L815.4,328.4 L815.7,331.1 L816.0,333.9 L816.3,336.7 L816.6,339.5 L816.9,342.4 L817.2,345.3 L817.4,348.3 L817.7,351.2 L817.9,354.2 L818.0,357.1 L818.2,360.1 L818.2,363.1 L818.3,366.0 L818.3,369.0 L818.2,371.9 L818.1,374.8 L817.9,377.6 L817.8,380.5 L817.7,383.3 L817.5,386.1 L817.3,388.8 L817.0,391.6 L816.6,394.2 L816.1,396.9 L815.6,399.4 L814.9,402.0 L814.2,404.5 L813.4,406.9 L812.5,409.3 L811.5,411.6 L810.3,414.0 L809.1,416.2 L807.7,418.5 L806.2,420.7 L804.6,423.0 L802.9,425.3 L801.4,428.3 Z"/>
+        <path d="M822.7,314.2 L819.6,314.3 L816.4,314.5 L813.3,314.9 L810.1,315.4 L807.0,316.1 L804.0,316.8 L800.9,317.7 L797.9,318.7 L794.9,319.8 L792.0,321.1 L789.1,322.4 L786.2,323.8 L783.4,325.3 L780.6,326.9 L777.9,328.6 L775.2,330.4 L772.5,332.3 L769.9,334.2 L767.4,336.2 L765.0,338.4 L762.8,340.7 L760.6,343.1 L758.5,345.5 L756.4,348.0 L754.5,350.6 L752.6,353.1 L750.8,355.8 L749.2,358.5 L747.6,361.2 L746.1,363.9 L744.7,366.7 L743.5,369.5 L742.4,372.3 L741.4,375.2 L740.5,378.1 L739.8,381.0 L739.3,383.9 L739.1,386.8 L739.7,389.9 L740.3,390.1 L742.5,387.9 L744.1,385.6 L745.6,383.3 L747.1,381.0 L748.6,378.7 L750.2,376.5 L751.8,374.2 L753.5,372.0 L755.2,369.8 L757.0,367.7 L758.9,365.5 L760.8,363.5 L762.7,361.4 L764.7,359.4 L766.8,357.5 L768.9,355.6 L771.0,353.8 L773.2,352.0 L775.4,350.3 L777.6,348.6 L779.8,346.9 L782.0,345.2 L784.2,343.6 L786.5,342.1 L788.8,340.7 L791.2,339.3 L793.5,338.0 L795.9,336.8 L798.3,335.7 L800.8,334.7 L803.2,333.8 L805.7,333.0 L808.1,332.3 L810.6,331.7 L813.1,331.2 L815.5,330.8 L818.0,330.5 L820.4,330.3 L822.9,330.2 Z"/>
+        <path d="M830.8,322.2 L830.4,324.7 L829.3,326.9 L827.5,328.7 L825.3,329.8 L822.8,330.2 L820.3,329.8 L818.1,328.7 L816.3,326.9 L815.2,324.7 L814.8,322.2 L815.2,319.7 L816.3,317.5 L818.1,315.7 L820.3,314.6 L822.8,314.2 L825.3,314.6 L827.5,315.7 L829.3,317.5 L830.4,319.7 Z"/>
+        <path d="M436.6,628.7 L434.5,626.9 L432.3,625.9 L429.9,625.2 L427.6,624.6 L425.2,624.2 L422.8,623.9 L420.3,623.6 L417.9,623.5 L415.4,623.4 L412.9,623.5 L410.5,623.6 L408.0,623.8 L405.5,624.0 L403.0,624.4 L400.6,624.8 L398.1,625.2 L395.6,625.7 L393.2,626.3 L390.8,627.0 L388.4,627.8 L386.0,628.8 L383.7,629.8 L381.5,630.8 L379.2,631.9 L377.0,633.1 L374.8,634.3 L372.6,635.5 L370.4,636.8 L368.3,638.1 L366.2,639.5 L364.2,640.8 L362.2,642.3 L360.2,643.8 L358.3,645.3 L356.3,646.8 L354.5,648.4 L352.6,650.0 L350.9,651.6 L349.1,653.3 L360.3,664.7 L361.8,663.3 L363.3,661.9 L364.9,660.5 L366.5,659.1 L368.2,657.8 L369.9,656.5 L371.6,655.2 L373.3,654.0 L375.1,652.8 L376.9,651.6 L378.8,650.4 L380.6,649.3 L382.5,648.3 L384.4,647.2 L386.4,646.2 L388.3,645.3 L390.3,644.4 L392.3,643.5 L394.3,642.7 L396.3,641.8 L398.3,640.9 L400.2,640.0 L402.2,639.1 L404.3,638.3 L406.3,637.5 L408.3,636.8 L410.4,636.1 L412.5,635.4 L414.6,634.8 L416.7,634.2 L418.8,633.7 L420.9,633.2 L423.1,632.7 L425.2,632.3 L427.4,631.9 L429.6,631.5 L431.9,631.0 L434.1,630.5 L436.6,629.3 Z"/>
+        <path d="M349.1,664.7 L351.0,666.5 L352.8,668.2 L354.8,670.0 L356.7,671.7 L358.7,673.4 L360.8,675.0 L362.9,676.6 L365.0,678.2 L367.2,679.8 L369.4,681.3 L371.6,682.8 L373.9,684.3 L376.2,685.7 L378.6,687.0 L381.0,688.3 L383.4,689.5 L385.8,690.7 L388.3,691.8 L390.8,692.8 L393.4,693.7 L396.0,694.4 L398.7,695.0 L401.3,695.5 L404.0,695.9 L406.7,696.2 L409.4,696.4 L412.1,696.5 L414.7,696.5 L417.4,696.4 L420.1,696.1 L422.7,695.7 L425.4,695.2 L428.0,694.5 L430.6,693.7 L433.1,692.8 L435.6,691.6 L437.9,690.3 L440.2,688.7 L442.1,686.3 L441.9,685.7 L438.9,685.3 L436.3,685.4 L433.9,685.6 L431.4,685.7 L429.1,685.8 L426.8,685.8 L424.5,685.7 L422.2,685.5 L420.0,685.2 L417.8,684.9 L415.6,684.5 L413.5,684.1 L411.3,683.5 L409.2,682.9 L407.1,682.2 L405.0,681.5 L402.9,680.7 L400.9,679.8 L398.8,678.9 L396.7,678.0 L394.6,677.1 L392.6,676.2 L390.5,675.2 L388.4,674.1 L386.4,673.0 L384.3,671.9 L382.3,670.6 L380.3,669.4 L378.4,668.1 L376.4,666.7 L374.5,665.4 L372.6,663.9 L370.7,662.5 L368.9,661.0 L367.1,659.5 L365.4,658.0 L363.6,656.4 L361.9,654.8 L360.3,653.3 Z"/>
+        <path d="M362.7,659.0 L362.3,661.5 L361.2,663.7 L359.4,665.5 L357.2,666.6 L354.7,667.0 L352.2,666.6 L350.0,665.5 L348.2,663.7 L347.1,661.5 L346.7,659.0 L347.1,656.5 L348.2,654.3 L350.0,652.5 L352.2,651.4 L354.7,651.0 L357.2,651.4 L359.4,652.5 L361.2,654.3 L362.3,656.5 Z"/>
+        <path d="M813.4,629.3 L815.9,630.5 L818.1,631.0 L820.4,631.5 L822.6,631.9 L824.8,632.3 L826.9,632.7 L829.1,633.2 L831.2,633.7 L833.3,634.2 L835.4,634.8 L837.5,635.4 L839.6,636.1 L841.7,636.8 L843.7,637.5 L845.7,638.3 L847.8,639.1 L849.8,640.0 L851.7,640.9 L853.7,641.8 L855.7,642.7 L857.7,643.5 L859.7,644.4 L861.7,645.3 L863.6,646.2 L865.6,647.2 L867.5,648.3 L869.4,649.3 L871.2,650.4 L873.1,651.6 L874.9,652.8 L876.7,654.0 L878.4,655.2 L880.1,656.5 L881.8,657.8 L883.5,659.1 L885.1,660.5 L886.7,661.9 L888.2,663.3 L889.7,664.7 L900.9,653.3 L899.1,651.6 L897.4,650.0 L895.5,648.4 L893.7,646.8 L891.7,645.3 L889.8,643.8 L887.8,642.3 L885.8,640.8 L883.8,639.5 L881.7,638.1 L879.6,636.8 L877.4,635.5 L875.2,634.3 L873.0,633.1 L870.8,631.9 L868.5,630.8 L866.3,629.8 L864.0,628.8 L861.6,627.8 L859.2,627.0 L856.8,626.3 L854.4,625.7 L851.9,625.2 L849.4,624.8 L847.0,624.4 L844.5,624.0 L842.0,623.8 L839.5,623.6 L837.1,623.5 L834.6,623.4 L832.1,623.5 L829.7,623.6 L827.2,623.9 L824.8,624.2 L822.4,624.6 L820.1,625.2 L817.7,625.9 L815.5,626.9 L813.4,628.7 Z"/>
+        <path d="M889.7,653.3 L888.1,654.8 L886.4,656.4 L884.6,658.0 L882.9,659.5 L881.1,661.0 L879.3,662.5 L877.4,663.9 L875.5,665.4 L873.6,666.7 L871.6,668.1 L869.7,669.4 L867.7,670.6 L865.7,671.9 L863.6,673.0 L861.6,674.1 L859.5,675.2 L857.4,676.2 L855.4,677.1 L853.3,678.0 L851.2,678.9 L849.1,679.8 L847.1,680.7 L845.0,681.5 L842.9,682.2 L840.8,682.9 L838.7,683.5 L836.5,684.1 L834.4,684.5 L832.2,684.9 L830.0,685.2 L827.8,685.5 L825.5,685.7 L823.2,685.8 L820.9,685.8 L818.6,685.7 L816.1,685.6 L813.7,685.4 L811.1,685.3 L808.1,685.7 L807.9,686.3 L809.8,688.7 L812.1,690.3 L814.4,691.6 L816.9,692.8 L819.4,693.7 L822.0,694.5 L824.6,695.2 L827.3,695.7 L829.9,696.1 L832.6,696.4 L835.3,696.5 L837.9,696.5 L840.6,696.4 L843.3,696.2 L846.0,695.9 L848.7,695.5 L851.3,695.0 L854.0,694.4 L856.6,693.7 L859.2,692.8 L861.7,691.8 L864.2,690.7 L866.6,689.5 L869.0,688.3 L871.4,687.0 L873.8,685.7 L876.1,684.3 L878.4,682.8 L880.6,681.3 L882.8,679.8 L885.0,678.2 L887.1,676.6 L889.2,675.0 L891.3,673.4 L893.3,671.7 L895.2,670.0 L897.2,668.2 L899.0,666.5 L900.9,664.7 Z"/>
+        <path d="M903.3,659.0 L902.9,661.5 L901.8,663.7 L900.0,665.5 L897.8,666.6 L895.3,667.0 L892.8,666.6 L890.6,665.5 L888.8,663.7 L887.7,661.5 L887.3,659.0 L887.7,656.5 L888.8,654.3 L890.6,652.5 L892.8,651.4 L895.3,651.0 L897.8,651.4 L900.0,652.5 L901.8,654.3 L902.9,656.5 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
+<header class="hdr" id="hdr">
+  <div class="wrap hdr__in">
+    <a class="brand" href="#top" aria-label="Golden Lotus, începutul paginii"><svg data-lotus viewBox="280 200 690 580" aria-hidden="true"></svg><span aria-hidden="true">GOLDEN LOTUS</span></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#colectii" data-nav="colectii">Colecții</a><a href="#verighete" data-nav="verighete">Verighete</a><a href="#magazine" data-nav="magazine">Magazine</a>
+    </nav>
+    <div class="metal" role="group" aria-label="Tema: Aur (deschisă) sau Argint (închisă)">
+      <button type="button" data-set-theme="aur" aria-pressed="true">AUR</button><i aria-hidden="true">/</i><button type="button" data-set-theme="argint" aria-pressed="false">ARGINT</button>
+    </div>
+    <button class="pill pill--sm" type="button" data-open-reserve>Rezervă</button>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- 1. LOTUSUL: fereastra foto care se deschide la derulare -->
+  <section class="stage" id="top" aria-labelledby="h1">
+    <div class="stage__sticky" id="sticky">
+      <div class="lotus-window" id="lwin" aria-hidden="true">
+        <img src="media/hero-lant-aur.webp" alt="" width="1800" height="2250" fetchpriority="high" decoding="async">
+      </div>
+      <svg class="lotus-outline" id="lout" data-lotus aria-hidden="true"></svg>
+      <!-- intro: linia de sub lotus (din logo) e solul; picătura cade pe ea, stropește, lotusul iese din punctul de impact -->
+      <svg class="intro-fx" id="fx" aria-hidden="true" focusable="false">
+        <g id="fxG">
+          <circle id="fx-glint" cx="625" cy="772" r="0"/>
+          <ellipse class="fx-ring" cx="625" cy="772" rx="0" ry="0"/>
+          <ellipse class="fx-ring" cx="625" cy="772" rx="0" ry="0"/>
+          <g id="fx-spl"></g>
+          <g id="fx-drop" opacity="0"><path d="M0,-40 C4,-29 12,-21 12,-12 A12,12 0 1 1 -12,-12 C-12,-21 -4,-29 0,-40 Z"/><ellipse cx="-4.5" cy="-15" rx="2.6" ry="4.2" fill="#FFFBEA" opacity=".85"/></g>
+        </g>
+      </svg>
+      <div class="stage__copy" id="copy">
+        <div class="lotus-slot" id="slot"><svg data-lotus viewBox="280 200 690 630" aria-hidden="true"></svg></div>
+        <h1 id="h1"><span class="ln">Lumina care<br> <em class="accent">rămâne</em> a ta.</span></h1>
+        <p class="stage__sub fade-up" style="--dl:1350ms">Bijuterii din aur și argint,<br class="br-m"> alese cu grijă.</p>
+        <div class="stage__cta fade-up" style="--dl:1550ms">
+          <button class="pill pill--solid" type="button" data-open-reserve id="hero-cta">Rezervă o piesă</button>
+          <a class="link-arrow" href="#colectii">Vezi colecțiile <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <p class="stage__cap" id="cap"><span>Aur · catifea · lumină</span><strong>Aurul prinde lumina și o păstrează.</strong></p>
+    </div>
+  </section>
+
+  <!-- 2. MANIFEST -->
+  <section class="manifest wrap" aria-labelledby="h-man">
+    <p class="label">Golden Lotus · <b>Aur</b> &amp; <b>Argint</b></p>
+    <h2 id="h-man" data-bloom><span class="ln bloom-line" style="--i:0">Fiecare piesă trece</span><span class="ln bloom-line" style="--i:1">prin mâinile noastre</span><span class="ln bloom-line" style="--i:2">înainte să fie a ta.</span></h2>
+    <p>Rezervi online, o vezi în magazin, o iei acasă doar dacă îți place.</p>
+  </section>
+
+  <!-- 3. COLECȚIILE -->
+  <section class="coll wrap" id="colectii" aria-labelledby="h-col">
+    <div class="coll__head"><div><p class="label">Colecțiile</p><h2 id="h-col">Șase feluri de a purta lumina</h2></div><p>Alege o colecție, apoi rezervă proba în magazin.</p></div>
+    <div class="coll__body">
+      <ol id="coll-list"></ol>
+      <div class="preview" id="preview" aria-hidden="true"><img alt=""><img alt="" class="is-old"><span>Deschide colecția</span></div>
+    </div>
+  </section>
+
+  <!-- 4. VERIGHETE -->
+  <section class="rings wrap" id="verighete" aria-labelledby="h-ring">
+    <div class="rings__media" id="rings-media">
+      <figure class="rv rv--main"><img src="media/verighete-cutie.webp" alt="Două verighete de aur într-o cutie albă de catifea" width="1400" height="933" loading="lazy" decoding="async"></figure>
+      <figure class="rv rv--small" id="rv-small"><img src="media/col-verighete.webp" alt="O mireasă ține în palmă două verighete" width="1400" height="933" loading="lazy" decoding="async"></figure>
+    </div>
+    <div class="rings__copy">
+      <p class="label">V — Verighete &amp; logodnă</p>
+      <h2 id="h-ring" data-bloom><span class="ln bloom-line" style="--i:0">Alese în doi,</span><span class="ln bloom-line" style="--i:1"><em>purtate</em> o viață.</span></h2>
+      <p>Încercați împreună, fără grabă, în magazinul din Călărași sau din Strășeni. Programezi proba, noi pregătim modelele.</p>
+      <button class="pill" type="button" data-open-reserve data-title="Programează o probă" data-ctx="Verighete &amp; logodnă">Programează o probă</button>
+      <p class="note">Studiu: aici vine momentul 3D — o verighetă care se rotește la derulare (BRAND.md §6.3).</p>
+    </div>
+  </section>
+
+  <!-- 5. 20 DE ANI -->
+  <section class="wrap" aria-labelledby="h-years">
+    <div class="years">
+      <div class="big" aria-hidden="true"><span id="count">20</span></div>
+      <div><h2 id="h-years"><span class="sr">20 </span>de ani cu aur și argint</h2><p>Cifra vine din descrierea lor de pe Instagram. Anul de început și povestea sunt <span class="tbc">de confirmat cu clientul</span>.</p></div>
+    </div>
+  </section>
+
+  <!-- 6. MAGAZINE -->
+  <section class="stores wrap" id="magazine" aria-labelledby="h-st">
+    <p class="label">Magazinele</p>
+    <h2 id="h-st">Două adrese, aceeași grijă</h2>
+    <div class="stores__grid">
+      <article class="store">
+        <div><h3>Strășeni</h3>
+          <dl><dt>Program</dt><dd>Luni–Sâmbătă <span class="nw">9:00–19:00</span><br>Duminică <span class="nw">9:00–17:00</span></dd><dt>Telefon</dt><dd><a href="tel:+37362000587">062 000 587</a></dd><dt>Adresă</dt><dd class="tbc">de confirmat</dd></dl></div>
+        <img src="media/fatada-straseni.webp" alt="Fațada magazinului din Strășeni, cu firma AUR · ARGINT" width="640" height="1136" loading="lazy" decoding="async">
+      </article>
+      <article class="store">
+        <div><h3>Călărași</h3>
+          <dl><dt>Program</dt><dd class="tbc">de confirmat</dd><dt>Telefon</dt><dd class="tbc">de confirmat</dd><dt>Adresă</dt><dd class="tbc">de confirmat</dd></dl></div>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="ftr" id="ftr">
+  <svg data-lotus data-draw data-onview viewBox="280 200 690 580" aria-hidden="true" style="--draw-delay:0ms"></svg>
+  <span class="word">GOLDEN LOTUS</span><span class="rule"></span><span class="dot"></span>
+  <div class="ftr__row">
+    <span>Studiu de mișcare pentru demonstrație · 24.09.2026</span>
+    <button type="button" id="motion-toggle" aria-pressed="false">Mai puțină mișcare</button>
+  </div>
+</footer>
+
+<!-- vederea unei colecții: se deschide din imaginea previzualizată (element comun) -->
+<div class="cview" id="cview" role="dialog" aria-modal="true" aria-labelledby="cv-title" hidden>
+  <div class="cview__bg" id="cv-bg"></div>
+  <div class="cview__media" id="cv-media"><img alt="" id="cv-img-a"><img alt="" id="cv-img-b" class="is-old"><small>Imagine ilustrativă</small></div>
+  <div class="cview__body" id="cv-body">
+    <button class="link-arrow link-arrow--back" type="button" data-cv-close><span aria-hidden="true">←</span> Înapoi la colecții</button>
+    <p class="label swap" id="cv-num"></p>
+    <h2 id="cv-title" class="swap" tabindex="-1"></h2>
+    <p class="cview__text swap" id="cv-text"></p>
+    <div class="cview__cta">
+      <button class="pill pill--solid" type="button" data-open-reserve id="cv-reserve" data-title="Rezervă o probă">Rezervă o probă</button>
+      <a class="link-arrow" href="tel:+37362000587">Sună: 062 000 587 <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="note">Studiu: aici apar piesele reale ale colecției, după ședința foto.</p>
+    <div class="cview__nav"><button class="link-arrow link-arrow--back" type="button" id="cv-prev"></button><button class="link-arrow" type="button" id="cv-next"></button></div>
+  </div>
+</div>
+
+<dialog class="drawer" id="reserve" aria-labelledby="res-title">
+  <div class="drawer__in">
+    <div class="drawer__top"><svg data-lotus data-draw viewBox="280 200 690 580" aria-hidden="true" style="--draw-delay:120ms"></svg><button class="x" type="button" data-close aria-label="Închide"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button></div>
+    <form id="res-form" class="stagger" novalidate>
+      <h2 id="res-title" style="--i:0">Rezervă o piesă</h2>
+      <p class="ctx" id="res-ctx" style="--i:1" hidden></p>
+      <p class="demo-note" style="--i:1">Demonstrație: formularul nu trimite nimic. Toate câmpurile sunt necesare.</p>
+      <fieldset style="--i:2"><legend>Magazinul</legend><div class="chips">
+        <label><input type="radio" name="mag" value="Strășeni" checked><span>Strășeni</span></label>
+        <label><input type="radio" name="mag" value="Călărași"><span>Călărași</span></label></div></fieldset>
+      <fieldset style="--i:3" aria-describedby="e-zi"><legend>Când vii</legend><div class="chips">
+        <label><input type="radio" name="cand" value="azi" checked><span>Azi</span></label>
+        <label><input type="radio" name="cand" value="maine"><span>Mâine</span></label>
+        <label><input type="radio" name="cand" value="alta"><span>Altă zi</span></label></div>
+        <div class="more" id="more-days"><div class="more__in" inert>
+          <div class="days">
+            <button class="days__nav" type="button" data-days="-1" aria-label="Zilele anterioare"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2 3.5 6l4 4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></button>
+            <div class="days__track" id="days" role="radiogroup" aria-label="Alege ziua"></div>
+            <button class="days__nav" type="button" data-days="1" aria-label="Zilele următoare"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></button>
+          </div>
+        </div></div>
+        <small class="err" id="e-zi" aria-live="polite"></small></fieldset>
+      <fieldset style="--i:4" aria-describedby="e-ora"><legend>Ora</legend><div class="chips" id="slots"></div>
+        <small class="err" id="e-ora" aria-live="polite"></small></fieldset>
+      <label class="field" style="--i:5"><span>Numele</span><input name="nume" autocomplete="name" required aria-describedby="e-nume"><small class="err" id="e-nume" aria-live="polite"></small></label>
+      <label class="field" style="--i:6"><span>Telefonul</span><input name="tel" type="tel" inputmode="tel" autocomplete="tel" required aria-describedby="e-tel" placeholder="062 000 587"><small class="err" id="e-tel" aria-live="polite"></small></label>
+      <div style="--i:7"><button class="pill pill--solid" type="submit" id="res-submit">Trimite rezervarea</button></div>
+      <p class="demo-note" style="--i:8">Sau sună direct: <a href="tel:+37362000587">062 000 587</a></p>
+    </form>
+    <div class="done" id="res-done" hidden><svg data-lotus data-draw viewBox="280 200 690 580" aria-hidden="true"></svg><h3 tabindex="-1">Te așteptăm.</h3><p class="done__sum" id="res-sum"></p><p class="demo-note">În site-ul real, cererea ajunge la vânzător pe Telegram.</p></div>
+  </div>
+</dialog>
+
+<p class="flag">Studiu de mișcare · nu e site-ul final · imagini STOCK</p>
+
+<script>
+(() => {
+  const html = document.documentElement;
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = () => reduceMQ.matches || html.dataset.motion === 'reduce';
+
+  /* ---------- lotusul: un singur desen, dintr-o linie (brand/lotus.svg) ----------
+     Același lotus peste tot: mic în antet, subsol și sertar (linie groasă) și mare pe primul ecran (linie subțire),
+     unde are dedesubt linia și punctul din logo.
+     Ordinea de desenare (data-o): apa → frunzele de la bază → petala centrală → petalele mari → cârligele din spate. */
+  const LINES = `<g class="ln-lines">
+    <path data-o="1" pathLength="1" d="M625,694.3 C564.8,634.8 460.6,668.1 437.6,726.8 C484.7,752 572.8,743.3 625,694.3 C677.2,743.3 765.3,752 812.4,726.8 C789.4,668.1 685.2,634.8 625,694.3"/>
+    <path data-o="2" pathLength="1" d="M436.6,629 C407.2,624.8 375.5,638.7 354.7,659 C377.1,680.8 410.5,699.8 442,686"/>
+    <path data-o="2" pathLength="1" d="M813.4,629 C842.8,624.8 874.5,638.7 895.3,659 C872.9,680.8 839.5,699.8 808,686"/>
+    <path data-o="3" pathLength="1" d="M625,626.9 C588.5,570.7 527.9,520.4 529.5,445 C525.5,358.2 567.3,284.9 625,226.1"/>
+    <path data-o="3" pathLength="1" d="M625,626.9 C661.5,570.7 722.1,520.4 720.5,445 C724.5,358.2 682.7,284.9 625,226.1"/>
+    <path data-o="4" pathLength="1" d="M604.8,633.7 C465.8,661 325.6,556.5 306.8,422.3 C340,419.1 401.5,417.7 436,454.4 C470.9,481.1 502.5,512 533,543.6"/>
+    <path data-o="4" pathLength="1" d="M645.2,633.7 C784.2,661 924.4,556.5 943.2,422.3 C910,419.1 848.5,417.7 814,454.4 C779.1,481.1 747.5,512 717,543.6"/>
+    <path data-o="5" pathLength="1" d="M448.4,428.5 C415.8,406.7 423.6,355.7 427.2,322.2 C463.7,322.5 500.3,355.8 510,390"/>
+    <path data-o="5" pathLength="1" d="M801.6,428.5 C834.2,406.7 826.4,355.7 822.8,322.2 C786.3,322.5 749.7,355.8 740,390"/>
+  </g>`;
+  // drumul luminii pe logo-ul mare, pe partea stângă (dreapta e oglindită): două lumini în total, care pornesc din punct,
+  // merg pe linia de jos spre margini, urcă prin apă, frunză, petala mare și cârlig și se întâlnesc în vârful petalei centrale
+  const TRAIL = [
+    'M625,772 L385,772',                                                                                          // linia de jos
+    'M625,694.3 C564.8,634.8 460.6,668.1 437.6,726.8 C484.7,752 572.8,743.3 625,694.3',                           // apa
+    'M436.6,629 C407.2,624.8 375.5,638.7 354.7,659 C377.1,680.8 410.5,699.8 442,686',                          // frunza
+    'M604.8,633.7 C465.8,661 325.6,556.5 306.8,422.3 C340,419.1 401.5,417.7 436,454.4 C470.9,481.1 502.5,512 533,543.6', // petala mare
+    'M448.4,428.5 C415.8,406.7 423.6,355.7 427.2,322.2 C463.7,322.5 500.3,355.8 510,390',                         // cârligul
+    'M625,626.9 C588.5,570.7 527.9,520.4 529.5,445 C525.5,358.2 567.3,284.9 625,226.1',                          // petala centrală
+  ];
+  const mirror = d => d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (_, x, y) => `${+(1250 - x).toFixed(1)},${y}`);
+  const DOT = { x: 625, y: 814, r: 6.5 };
+  $$('svg[data-lotus]').forEach(svg => {
+    if (svg.id !== 'lout') { svg.innerHTML = LINES; return; }
+    // logo-ul mare: lotusul, baza (linie + punct) și lumina, în grupuri separate (în intro lotusul și baza se mișcă diferit)
+    svg.innerHTML = `<g id="outG">${LINES}</g>`
+      + `<g id="baseG"><g class="ln-lines ln-base"><path pathLength="1" d="M625,772 L385,772"/><path pathLength="1" d="M625,772 L865,772"/></g>`
+      + `<circle class="ln-dot" cx="${DOT.x}" cy="${DOT.y}" r="${DOT.r}"/></g>`
+      + `<g id="lightG"><g class="ln-light">${[...TRAIL, ...TRAIL.map(mirror)].map(d => `<path d="${d}"/>`).join('')}</g>`
+      + `<circle class="ln-dot-light" cx="${DOT.x}" cy="${DOT.y}" r="${DOT.r + 1}"/></g>`;
+  });
+  const drawNow = el => { el.classList.remove('is-on'); void el.getBoundingClientRect(); el.classList.add('is-on'); };
+
+  /* lumina: un segment scurt și luminos (auriu pe Aur, alb pe Argint) care parcurge liniile cu viteză constantă,
+     câte unul pe fiecare parte; liniile rămân neschimbate în urma lui */
+  let lightAnims = [];
+  const lightStop = () => { lightAnims.forEach(a => a.cancel()); lightAnims = []; };
+  function lightPass() {
+    lightStop();
+    if (reduced() || !Element.prototype.animate) return;
+    const paths = $$('#lightG .ln-light path'), half = paths.length / 2, C = 80, SPEED = 1.05; // unități / ms
+    lightAnims.push($('#lightG .ln-dot-light').animate([{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 560, easing: 'ease-out', fill: 'both' }));
+    let t = 300;
+    for (let i = 0; i < half; i++) {
+      const len = paths[i].getTotalLength(), dur = len / SPEED;
+      [paths[i], paths[i + half]].forEach(p => {
+        p.style.strokeDasharray = `${C} ${Math.ceil(len + C + 60)}`;
+        lightAnims.push(p.animate([
+          { strokeDashoffset: C, opacity: 0 }, { opacity: 1, offset: .12 }, { opacity: 1, offset: .88 }, { strokeDashoffset: -len, opacity: 0 }
+        ], { duration: dur, delay: t, easing: 'linear', fill: 'both' }));
+      });
+      t += dur + 40;
+    }
+  }
+
+  /* ---------- tema AUR / ARGINT ---------- */
+  const setTheme = t => {
+    html.setAttribute('data-theme-switching', '');
+    html.dataset.theme = t;
+    $$('[data-set-theme]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.setTheme === t)));
+    try { localStorage.setItem('gl-theme', t); } catch (e) {}
+    requestAnimationFrame(() => requestAnimationFrame(() => html.removeAttribute('data-theme-switching')));
+  };
+  $$('[data-set-theme]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.setTheme)));
+  setTheme(html.dataset.theme || 'aur');
+
+  /* ---------- mai puțină mișcare ---------- */
+  const mt = $('#motion-toggle');
+  const syncMotion = () => mt.setAttribute('aria-pressed', String(html.dataset.motion === 'reduce'));
+  mt.addEventListener('click', () => {
+    if (html.dataset.motion === 'reduce') { delete html.dataset.motion; try { localStorage.removeItem('gl-motion'); } catch (e) {} }
+    else { html.dataset.motion = 'reduce'; try { localStorage.setItem('gl-motion', 'reduce'); } catch (e) {} }
+    syncMotion(); measure(); kickStage();
+  });
+  syncMotion();
+
+  /* ================= 1. LOTUSUL CA FEREASTRĂ ================= */
+  const stage = $('#top'), sticky = $('#sticky'), slot = $('#slot'), lwin = $('#lwin'), lout = $('#lout');
+  const clipG = $('#lotusClip'), copy = $('#copy'), cap = $('#cap');
+  const BOX = { x: 280, y: 200, w: 690, h: 630 }, CY = BOX.y + BOX.h / 2; // cadrul cuprinde lotusul + linia + punctul
+  // jumătatea dreaptă a petalei centrale (două curbe, de jos în sus): în ea „intrăm” la final
+  const CP1 = [[625, 641], [675.4, 585.8], [734.7, 523.4], [734.5, 445]], CP2 = [[734.5, 445], [736.5, 355.8], [697.5, 266.6], [625, 215]];
+  const Z = { x: 625, y: 440 };
+  const bez = (P, t) => { const u = 1 - t; return [u*u*u*P[0][0] + 3*u*u*t*P[1][0] + 3*u*t*t*P[2][0] + t*t*t*P[3][0], u*u*u*P[0][1] + 3*u*u*t*P[1][1] + 3*u*t*t*P[2][1] + t*t*t*P[3][1]]; };
+  const EDGE = [...Array.from({ length: 201 }, (_, i) => bez(CP1, i / 200)), ...Array.from({ length: 200 }, (_, i) => bez(CP2, (i + 1) / 200))]; // y descrescător
+  const halfWidthAt = y => {
+    if (y > 641 || y < 215) return -1;
+    for (let i = 1; i < EDGE.length; i++) {
+      const [x0, y0] = EDGE[i - 1], [x1, y1] = EDGE[i];
+      if (y <= y0 && y >= y1) return lerp(x0, x1, (y0 - y) / (y0 - y1 || 1)) - 625;
+    }
+    return -1;
+  };
+  // cea mai mică scară la care petala centrală acoperă tot ecranul (verificăm colțurile)
+  const coverScale = (vw, vh) => {
+    let lo = 1, hi = 600;
+    for (let k = 0; k < 40; k++) {
+      const m = (lo + hi) / 2, hw = vw / 2 / m, hh = vh / 2 / m;
+      if (halfWidthAt(Z.y - hh) >= hw && halfWidthAt(Z.y + hh) >= hw) hi = m; else lo = m;
+    }
+    return hi * 1.06;
+  };
+  const easeIO = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+  let G = null, pT = 0, pC = 0, running = false, introOn = false, redrawArmed = false;
+  function measure() {
+    const sr = sticky.getBoundingClientRect(), r = slot.getBoundingClientRect();
+    const vw = sr.width, vh = sr.height, s0 = r.width / BOX.w;
+    G = { vw, vh, s0, s1: coverScale(vw, vh), x0: r.left - sr.left + r.width / 2, y0: r.top - sr.top + r.height / 2 };
+    render(pC);
+  }
+  // punctul (ax, ay) din coordonatele lotusului ajunge la (sx, sy) pe ecran, la scara s
+  const placeTf = (ax, ay, sx, sy, s) => `translate(${(sx - ax * s).toFixed(2)} ${(sy - ay * s).toFixed(2)}) scale(${s.toFixed(5)})`;
+  // grosimea liniilor rămâne aceeași pe ecran oricât se mărește lotusul: 2px liniile, 3px lumina
+  const setStroke = (g, s) => { $$(`#${g.id} .ln-lines`).forEach(l => l.setAttribute('stroke-width', (2 / s).toFixed(4))); $$(`#${g.id} .ln-light`).forEach(l => l.setAttribute('stroke-width', (3 / s).toFixed(4))); };
+  function setLotus(tf, s) {
+    clipG.setAttribute('transform', tf);
+    ['#outG', '#baseG', '#lightG'].forEach(id => { const g = $(id); if (g) { g.setAttribute('transform', tf); setStroke(g, s); } });
+  }
+  function render(p) {
+    if (!G || introOn) return;
+    const still = reduced();
+    const e = still ? 0 : easeIO(clamp((p - .06) / .84));
+    const s = G.s0 * Math.pow(G.s1 / G.s0, e);
+    setLotus(placeTf(625, lerp(CY, Z.y, e), lerp(G.x0, G.vw / 2, e), lerp(G.y0, G.vh / 2, e), s), s);
+    lwin.style.clipPath = e > .999 ? 'none' : '';
+    lwin.style.webkitClipPath = e > .999 ? 'none' : '';
+    // sus: doar logo-ul (fără poză). La primul pas de derulare poza intră slab, cât textul se stinge;
+    // la al doilea e deplină, iar conturul dispare și cele trei petale mari se unesc. La urcare, invers.
+    lwin.style.opacity = still ? 1 : clamp(p / .12).toFixed(3);
+    const co = still ? 1 : 1 - clamp(p / .1), capv = still ? 0 : clamp((p - .86) / .1);
+    copy.style.setProperty('--co', co.toFixed(3)); copy.style.setProperty('--cy', (-(1 - co) * 34).toFixed(1) + 'px');
+    copy.style.pointerEvents = co < .5 ? 'none' : '';
+    lout.style.setProperty('--ol', (still ? 1 : 1 - clamp((p - .03) / .12)).toFixed(3));
+    lwin.style.setProperty('--ks', lerp(1.12, 1, e).toFixed(4));
+    lwin.style.setProperty('--cap', capv.toFixed(3)); cap.style.setProperty('--cap', capv.toFixed(3));
+    hdr.classList.toggle('cta-solid', p > .1 || scrollY > stage.offsetHeight - innerHeight);
+    // conturul se desenează din nou de fiecare dată când revii sus (doar conturul, lotusul rămâne pe loc)
+    if (p > .16 && !redrawArmed) { redrawArmed = true; lightStop(); }
+    else if (redrawArmed && p < .05) { redrawArmed = false; lightPass(); }
+  }
+  // „scrub” cu inerție: progresul urmează derularea, nu sare
+  function stageTarget() { const r = stage.getBoundingClientRect(); return clamp(-r.top / Math.max(1, r.height - innerHeight)); }
+  function tick() {
+    pC += (pT - pC) * .14;
+    if (Math.abs(pT - pC) < .0005) pC = pT;
+    render(pC);
+    if (pC !== pT) requestAnimationFrame(tick); else running = false;
+  }
+  function kickStage() { pT = reduced() ? 0 : stageTarget(); if (!running) { running = true; requestAnimationFrame(tick); } }
+
+  /* ================= 0. INTRO: picătura de aur (la fiecare deschidere, ≈2,5 s) =================
+     La mijlocul ecranului, linia de sub lotus (din logo) se trasează: e solul. Picătura de aur cade pe ea și face
+     stropi; din punctul de impact iese lotusul, gata făcut din linii (culoarea logo-ului): bobocul urcă și se deschide.
+     Apoi logo-ul întreg (lotus + linie + punct) urcă în locul lui, apare restul paginii, iar peste linii trece lumina.
+     Fotografia NU se vede în intro: ea apare abia la derulare. */
+  const TL = { drop: 200, impact: 800, bloom: 1000, bloomDur: 650, travel: 1750, travelDur: 800, reveal: 2080 };
+  TL.end = TL.travel + TL.travelDur;
+  function runIntro() {
+    introOn = true;
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    scrollTo(0, 0);
+    html.classList.add('intro-played');
+    const fx = $('#fx'), fxG = $('#fxG'), drop = $('#fx-drop'), glint = $('#fx-glint'), rings = $$('#fx .fx-ring');
+    const outG = $('#outG'), baseG = $('#baseG'), base = $$('#baseG .ln-base path'), dot = $('#baseG .ln-dot');
+    const GY = 772;                          // solul = linia logo-ului, în unitățile logo-ului
+    const NS = 'http://www.w3.org/2000/svg', DS = 1.15; // DS: mărimea picăturii
+    // stropii: unghi (grade), viteză (unități/s), rază — ficși, ca intro-ul să arate la fel de fiecare dată
+    const SPL = [[-170, 420, 3.4], [-158, 640, 5.2], [-147, 520, 3.6], [-136, 760, 6.4], [-124, 600, 4.2], [-113, 820, 7.2],
+                 [-102, 560, 3.8], [-93, 900, 5.6], [-84, 680, 4.4], [-74, 840, 6.8], [-64, 580, 3.8], [-54, 780, 6],
+                 [-43, 540, 4], [-32, 700, 5.2], [-21, 480, 3.4], [-11, 380, 3]].map(([a, v, r]) => {
+      const c = document.createElementNS(NS, 'ellipse'); $('#fx-spl').appendChild(c);
+      v *= 1.12;
+      return { c, r: r * 1.5, vx: Math.cos(a * Math.PI / 180) * v, vy: Math.sin(a * Math.PI / 180) * v };
+    });
+    const GRAV = 2600;
+    const eo = t => 1 - Math.pow(1 - t, 4), eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    let t0 = 0, revealed = false, raf = 0;
+    const layout = () => {
+      const sC = Math.min(G.s0 * 1.18, G.vh * .62 / BOX.h, G.vw * .86 / BOX.w);
+      return { sC, cx: G.vw / 2, cy: G.vh / 2, ix: G.vw / 2, iy: G.vh / 2 + (GY - CY) * sC };
+    };
+    const reveal = () => { if (revealed) return; revealed = true; html.classList.remove('intro'); };
+    const finish = () => {
+      if (!introOn) return;
+      cancelAnimationFrame(raf); reveal();
+      introOn = false; fx.remove();
+      base.forEach(p => { p.style.strokeDashoffset = ''; }); dot.setAttribute('r', DOT.r); outG.style.opacity = '';
+      html.classList.remove('intro-lock');
+      ['pointerdown', 'keydown'].forEach(ev => removeEventListener(ev, skip, true));
+      measure(); kickStage();
+      lightPass();                            // lumina trece peste linii abia cu logo-ul la locul lui
+    };
+    // un clic, o atingere sau Esc / Enter / Spațiu sar direct la final. Rotița NU: inerția touchpad-ului continuă
+    // și după reîncărcare și ar sări intro-ul fără ca vizitatorul să vrea
+    const skip = e => { if (e.type === 'keydown' && (e.repeat || !['Escape', 'Enter', ' '].includes(e.key))) return; finish(); };
+    ['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, skip, { capture: true, passive: true }));
+
+    function frame(now) {
+      if (!t0) t0 = now;
+      const t = now - t0, L = layout(), sC = L.sC, center = placeTf(625, CY, L.cx, L.cy, sC);
+      fxG.setAttribute('transform', center);
+      const w = 1.4 / sC;
+      // 1. linia logo-ului (solul) se trasează din centru spre margini; punctul apare după impact
+      if (t < TL.travel) { baseG.setAttribute('transform', center); setStroke(baseG, sC); }
+      const g = eio(clamp(t / 520));
+      base.forEach(p => { p.style.strokeDashoffset = (1.001 - g).toFixed(4); });
+      dot.setAttribute('r', (DOT.r * eo(clamp((t - TL.impact - 100) / 420))).toFixed(2));
+      // 2. picătura cade (accelerează ca în cădere liberă) și se alungește
+      const u0 = CY + (-90 - L.cy) / sC, k = clamp((t - TL.drop) / (TL.impact - TL.drop));
+      if (t < TL.drop) drop.setAttribute('opacity', 0);
+      else if (k < 1) {
+        const y = u0 + (GY - u0) * k * k;
+        drop.setAttribute('opacity', 1);
+        drop.setAttribute('transform', `translate(625 ${y.toFixed(2)}) scale(${(DS * (1 - .14 * k)).toFixed(3)} ${(DS * (1 + .3 * k)).toFixed(3)})`);
+      } else {
+        const q = clamp((t - TL.impact) / 90);    // impact: se turtește și dispare
+        drop.setAttribute('opacity', (1 - q).toFixed(3));
+        drop.setAttribute('transform', `translate(625 ${GY}) scale(${(DS * (1 + .9 * q)).toFixed(3)} ${(DS * (1 - .7 * q)).toFixed(3)})`);
+      }
+      // 3. stropii: arcuri scurte, cu gravitație, alungiți pe direcția de zbor, care se sting
+      const tau = (t - TL.impact) / 1000;
+      SPL.forEach(s => {
+        const y = GY - 3 + s.vy * tau + GRAV / 2 * tau * tau;
+        if (tau <= 0 || tau > .75 || y > GY) { s.c.setAttribute('opacity', 0); return; }
+        const x = 625 + s.vx * tau * (1 - .25 * tau), vy = s.vy + GRAV * tau, sp = Math.hypot(s.vx, vy), k = 1 + sp / 700;
+        s.c.setAttribute('rx', (s.r * k).toFixed(2)); s.c.setAttribute('ry', (s.r / Math.sqrt(k)).toFixed(2));
+        s.c.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${(Math.atan2(vy, s.vx) * 180 / Math.PI).toFixed(1)})`);
+        s.c.setAttribute('opacity', (1 - clamp((tau - .3) / .4)).toFixed(3));
+      });
+      // 4. undele aurii pe sol + sclipirea din punctul de impact
+      rings.forEach((r, i) => {
+        const q = clamp((t - TL.impact - i * 130) / 760), e = eo(q);
+        r.setAttribute('rx', (8 + 220 * e).toFixed(2)); r.setAttribute('ry', (1 + 18 * e).toFixed(2));
+        r.setAttribute('opacity', (q > 0 ? .85 * (1 - q) : 0).toFixed(3)); r.style.strokeWidth = w;
+      });
+      const gq = clamp((t - TL.impact + 10) / 520);
+      glint.setAttribute('r', (6 + 84 * eo(gq)).toFixed(2)); glint.setAttribute('opacity', (gq > 0 ? 1 - gq : 0).toFixed(3));
+      // 5. lotusul din linii iese repede din punctul de impact: întâi țâșnește în sus (boboc), apoi se deschide
+      const lk = clamp((t - TL.bloom) / TL.bloomDur);
+      if (t < TL.travel) {
+        const sy = sC * Math.max(.002, eo(lk)), sx = sC * Math.max(.002, Math.pow(eo(lk), 1.6));
+        outG.setAttribute('transform', `translate(${(L.ix - 625 * sx).toFixed(2)} ${(L.iy - GY * sy).toFixed(2)}) scale(${sx.toFixed(5)} ${sy.toFixed(5)})`);
+        setStroke(outG, Math.sqrt(sx * sy));
+        outG.style.opacity = t < TL.bloom ? 0 : 1;
+      } else {
+        // 6. logo-ul întreg (lotus + linie + punct) urcă în locul lui de pe primul ecran; efectele aurii se sting
+        const m = eio(clamp((t - TL.travel) / TL.travelDur));
+        const ax = lerp(L.cx, G.x0, m), ay = lerp(L.cy, G.y0, m), s = sC * Math.pow(G.s0 / sC, m);
+        setLotus(placeTf(625, CY, ax, ay, s), s);
+        fx.style.opacity = (1 - clamp((t - TL.travel) / 380)).toFixed(3);
+        if (t > TL.reveal) reveal();          // textul și antetul intră cât logo-ul încă urcă
+      }
+      if (t >= TL.end) return finish();
+      raf = requestAnimationFrame(frame);
+    }
+    outG.style.opacity = 0;
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* ---------- antet: fundal, ascundere la derulare în jos, secțiunea curentă ---------- */
+  const hdr = $('#hdr');
+  let lastY = scrollY, ticking = false;
+  addEventListener('scroll', () => {
+    kickStage();
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false; const y = scrollY;
+      hdr.classList.toggle('is-solid', y > 40);
+      hdr.classList.toggle('is-hidden', y > lastY && y > 400 && !$('#reserve').open);
+      lastY = y; parallax();
+    });
+  }, { passive: true });
+  addEventListener('resize', () => { measure(); kickStage(); });
+  document.fonts && document.fonts.ready.then(() => { measure(); kickStage(); });
+  measure(); kickStage();
+  // prima intrare din sesiune: intro-ul; altfel, ca înainte: conturul se desenează peste fotografie
+  if (html.classList.contains('intro')) runIntro(); else lightPass();
+
+  const navIO = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    $$('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === e.target.id));
+    $$('[data-nav]').forEach(a => a.getAttribute('aria-current') === '' && a.setAttribute('aria-current', 'true'));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  ['colectii', 'verighete', 'magazine'].forEach(id => navIO.observe(document.getElementById(id)));
+  const clearNav = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) $$('[data-nav]').forEach(a => a.removeAttribute('aria-current')); }), { rootMargin: '-45% 0px -50% 0px' });
+  [stage, $('.manifest')].forEach(el => clearNav.observe(el));
+
+  /* ---------- apariții la intrarea în ecran: se joacă la FIECARE trecere ----------
+     Intră când elementul e bine în ecran; se resetează (instant, fără să se vadă) abia când a ieșit complet,
+     ca să nu pâlpâie dacă vizitatorul se oprește chiar la margine. */
+  const play = el => {
+    if (el.matches('svg[data-onview]')) return drawNow(el);
+    if (el.id === 'count') return countUp(el);
+    el.classList.add('is-in');   // [data-bloom], #rings-media
+  };
+  const rewind = el => {
+    el.classList.add('no-anim');
+    if (el.matches('svg[data-onview]')) el.classList.remove('is-on');
+    else if (el.id === 'count') countReset(el);
+    else el.classList.remove('is-in');
+    void el.getBoundingClientRect(); el.classList.remove('no-anim');
+  };
+  const ioIn = new IntersectionObserver(entries => entries.forEach(en => {
+    if (!en.isIntersecting || en.target.dataset.seen) return;
+    en.target.dataset.seen = '1'; play(en.target);
+  }), { rootMargin: '0px 0px -12% 0px', threshold: .15 });
+  const ioOut = new IntersectionObserver(entries => entries.forEach(en => {
+    if (en.isIntersecting || !en.target.dataset.seen) return;
+    delete en.target.dataset.seen; rewind(en.target);
+  }), { threshold: 0 });
+  // atenție: nu observăm elemente ascunse cu clip-path (Chrome le consideră invizibile) — observăm containerul
+  $$('[data-bloom], #rings-media, svg[data-onview], #count').forEach(el => { ioIn.observe(el); ioOut.observe(el); });
+
+  // poza mică de la verighete: parallax mai vizibil (dublu față de înainte), tot discret
+  const rvSmall = $('#rv-small');
+  function parallax() {
+    if (reduced()) { rvSmall.style.setProperty('--par', '0px'); return; }
+    const r = rvSmall.getBoundingClientRect(); if (r.bottom < -100 || r.top > innerHeight + 100) return;
+    rvSmall.style.setProperty('--par', (((r.top + r.height / 2) - innerHeight / 2) * -.16).toFixed(1) + 'px');
+  }
+  parallax();
+
+  let countRaf = 0;
+  function countUp(el) {
+    const big = el.parentElement;
+    cancelAnimationFrame(countRaf);
+    if (reduced()) { el.textContent = '20'; big.style.fontWeight = 320; return; }
+    const t0 = performance.now(), D = 1800;
+    const step = now => { const t = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - t, 4);
+      el.textContent = String(Math.round(20 * e)).padStart(2, '0'); big.style.fontWeight = Math.round(80 + 240 * e);
+      if (t < 1) countRaf = requestAnimationFrame(step); };
+    countRaf = requestAnimationFrame(step);
+  }
+  function countReset(el) { cancelAnimationFrame(countRaf); if (reduced()) return; el.textContent = '00'; el.parentElement.style.fontWeight = 80; }
+
+  /* ================= 3. COLECȚIILE ================= */
+  const COLL = [
+    { slug: 'inele', num: 'I', name: 'Inele', meta: 'aur · argint', img: 'media/col-inele.webp', pos: '66% 50%', text: 'De purtat zilnic sau pentru o seară anume. Alegi modelul aici și îl încerci în magazin.' },
+    { slug: 'cercei', num: 'II', name: 'Cercei', meta: 'aur · argint', img: 'media/col-cercei.webp', pos: '44% 82%', text: 'De la piese discrete, pentru fiecare zi, la cercei care se văd de la distanță.' },
+    { slug: 'lanturi-coliere', num: 'III', name: 'Lanțuri & coliere', meta: 'aur · argint', img: 'media/col-coliere.webp', pos: '50% 40%', text: 'Lanțuri fine sau groase, singure ori în straturi, cu sau fără pandantiv.' },
+    { slug: 'bratari', num: 'IV', name: 'Brățări', meta: 'aur · argint', img: 'media/col-bratari.webp', pos: '40% 60%', text: 'Brățări fine pentru fiecare zi și brățări rigide pentru ocazii.' },
+    { slug: 'verighete', num: 'V', name: 'Verighete', meta: 'logodnă · nuntă', img: 'media/col-verighete.webp', pos: '55% 55%', text: 'Verighete și inele de logodnă. Programați proba și le încercați împreună.' },
+    { slug: 'argint', num: 'VI', name: 'Argint', meta: 'argint', img: 'media/col-argint.webp', pos: '50% 45%', text: 'Bijuterii din argint, pentru cine preferă lumina rece a metalului alb.' },
+  ];
+  const ARROW = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
+  const list = $('#coll-list');
+  list.innerHTML = COLL.map((c, i) => `<li><a class="row" href="#colectie-${c.slug}" data-i="${i}"><span class="num">${c.num}</span><span class="name">${c.name.replace('&', '&amp;')}</span><span class="meta">${c.meta}${ARROW}</span><img class="thumb" src="${c.img}" alt="" loading="lazy" style="object-position:${c.pos}"></a></li>`).join('');
+  COLL.forEach(c => { const im = new Image(); im.decoding = 'async'; im.src = c.img; }); // preîncărcare: fără pauze la schimbare
+
+  /* previzualizarea: un cadru fix în coloana din dreapta (nu urmează cursorul); se schimbă doar poza, prin încrucișare */
+  const prev = $('#preview'); let [front, back] = prev.querySelectorAll('img');
+  const fine = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 901px)');
+  let current = -1;
+  const pvShow = i => {
+    if (i === current) return; current = i;
+    back.src = COLL[i].img; back.style.objectPosition = COLL[i].pos;
+    back.classList.remove('is-old'); front.classList.add('is-old'); [front, back] = [back, front];
+  };
+  const hot = a => { $$('.row.is-hot').forEach(r => r !== a && r.classList.remove('is-hot')); a && a.classList.add('is-hot'); list.classList.toggle('is-hovering', !!a); };
+  list.addEventListener('pointerover', e => {
+    const a = e.target.closest('.row'); if (!a || e.pointerType === 'touch') return;
+    hot(a);
+    if (fine.matches && !reduced()) { pvShow(+a.dataset.i); prev.classList.add('is-on'); }
+  });
+  const pvHide = () => { prev.classList.remove('is-on'); hot(null); };
+  list.addEventListener('pointerleave', pvHide);
+  // tastatura: previzualizare doar la focus vizibil (nu după un clic cu mausul)
+  list.addEventListener('focusin', e => {
+    const a = e.target.closest('.row'); if (!a || !a.matches(':focus-visible')) return;
+    hot(a);
+    if (fine.matches && !reduced()) { pvShow(+a.dataset.i); prev.classList.add('is-on'); }
+  });
+  list.addEventListener('focusout', e => { if (!list.contains(e.relatedTarget)) pvHide(); });
+  list.addEventListener('click', e => {
+    const a = e.target.closest('.row'); if (!a) return;
+    e.preventDefault();
+    const i = +a.dataset.i;
+    const src = (prev.classList.contains('is-on') && current === i) ? prev.getBoundingClientRect() : (a.querySelector('.thumb').offsetWidth ? a.querySelector('.thumb').getBoundingClientRect() : a.querySelector('.name').getBoundingClientRect());
+    openCollection(i, src, a);
+  });
+
+  /* ================= vederea colecției ================= */
+  const cv = $('#cview'), cvMedia = $('#cv-media'), cvBody = $('#cv-body'), cvBg = $('#cv-bg');
+  let cvA = $('#cv-img-a'), cvB = $('#cv-img-b'), cvIndex = -1, cvReturn = null, cvAnims = [], cvPushed = false;
+  const cancelAll = () => { cvAnims.forEach(a => a.cancel()); cvAnims = []; };
+  const setLocked = on => { html.classList.toggle('is-locked', on); ['#main', '#hdr', '#ftr'].forEach(s => { $(s).inert = on; }); };
+  function fillCollection(i, animate) {
+    const c = COLL[i], p = COLL[(i + COLL.length - 1) % COLL.length], n = COLL[(i + 1) % COLL.length];
+    const apply = () => {
+      $('#cv-num').textContent = `${c.num} — Colecția`; $('#cv-title').textContent = c.name; $('#cv-text').textContent = c.text;
+      $('#cv-prev').innerHTML = `<span aria-hidden="true">←</span> <b>${p.num}</b> ${p.name.replace('&', '&amp;')}`;
+      $('#cv-next').innerHTML = `<b>${n.num}</b> ${n.name.replace('&', '&amp;')} <span aria-hidden="true">→</span>`;
+      $('#cv-reserve').dataset.ctx = c.name;
+    };
+    if (!animate) { cvA.src = c.img; cvA.style.objectPosition = c.pos; cvA.classList.remove('is-old'); cvB.classList.add('is-old'); apply(); return; }
+    // schimbare în aceeași vedere: încrucișare (imagine) + text care iese și intră
+    cvB.src = c.img; cvB.style.objectPosition = c.pos; cvB.classList.remove('is-old'); cvA.classList.add('is-old'); [cvA, cvB] = [cvB, cvA];
+    $$('#cview .swap').forEach(el => el.classList.add('is-out'));
+    setTimeout(() => { apply(); requestAnimationFrame(() => $$('#cview .swap').forEach(el => el.classList.remove('is-out'))); }, 200);
+  }
+  function openCollection(i, srcRect, returnEl) {
+    cancelAll(); cvIndex = i; cvReturn = returnEl || null;
+    fillCollection(i, false);
+    cv.hidden = false; setLocked(true); pvHide();
+    if (!cvPushed) { history.pushState({ cv: COLL[i].slug }, '', '#colectie-' + COLL[i].slug); cvPushed = true; }
+    const done = () => $('#cv-title').focus({ preventScroll: true });
+    if (reduced() || !srcRect || !cvMedia.animate) { done(); return; }
+    // element comun: imaginea pornește exact din cadrul pe care l-ai văzut (FLIP + decupaj)
+    const F = cvMedia.getBoundingClientRect(), S = srcRect;
+    const k = Math.max(S.width / F.width, S.height / F.height);
+    const vw = S.width / k, vh = S.height / k, ix = (F.width - vw) / 2, iy = (F.height - vh) / 2;
+    const dx = S.left - (F.left + ix * k), dy = S.top - (F.top + iy * k);
+    cvAnims.push(cvMedia.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${k})`, clipPath: `inset(${iy}px ${ix}px ${iy}px ${ix}px)` },
+      { transform: 'none', clipPath: 'inset(0px 0px 0px 0px)' }
+    ], { duration: 1050, easing: 'cubic-bezier(.16,1,.3,1)' }));
+    cvAnims.push(cvBg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.4,0,.2,1)' }));
+    [...cvBody.children].forEach((el, j) => cvAnims.push(el.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 800, delay: 380 + j * 55, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' })));
+    done();
+  }
+  function closeCollection() {
+    if (cv.hidden) return;
+    cancelAll();
+    const finish = () => { cv.hidden = true; setLocked(false); cvPushed = false; if (cvReturn) cvReturn.focus({ preventScroll: true }); };
+    if (reduced() || !cvMedia.animate) { finish(); return; }
+    // ieșirea e mai scurtă decât intrarea (~60%) și accelerează
+    const ease = 'cubic-bezier(.7,0,.84,0)';
+    cvAnims.push(cvMedia.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(50% 0 50% 0)' }], { duration: 520, easing: ease, fill: 'forwards' }));
+    [...cvBody.children].forEach(el => cvAnims.push(el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: ease, fill: 'forwards' })));
+    const bg = cvBg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, delay: 240, easing: ease, fill: 'forwards' });
+    cvAnims.push(bg); bg.onfinish = () => { cancelAll(); finish(); };
+  }
+  // Înapoi (buton, Esc sau butonul browserului) = pas înapoi în istoric
+  let cvDeep = false; // deschisă direct dintr-un link: la închidere curățăm adresa, nu ieșim din pagină
+  const leave = () => { if (cvDeep) { cvDeep = false; closeCollection(); history.replaceState(null, '', location.pathname + location.search); } else if (cvPushed) history.back(); else closeCollection(); };
+  $$('[data-cv-close]').forEach(b => b.addEventListener('click', leave));
+  cv.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leave(); } });
+  addEventListener('popstate', () => { if (!cv.hidden && !/^#colectie-/.test(location.hash)) closeCollection(); });
+  $('#cv-prev').addEventListener('click', () => { cvIndex = (cvIndex + COLL.length - 1) % COLL.length; fillCollection(cvIndex, !reduced()); history.replaceState({ cv: COLL[cvIndex].slug }, '', '#colectie-' + COLL[cvIndex].slug); });
+  $('#cv-next').addEventListener('click', () => { cvIndex = (cvIndex + 1) % COLL.length; fillCollection(cvIndex, !reduced()); history.replaceState({ cv: COLL[cvIndex].slug }, '', '#colectie-' + COLL[cvIndex].slug); });
+  // legătură directă (#colectie-inele) → se deschide fără animație
+  const deep = COLL.findIndex(c => location.hash === '#colectie-' + c.slug);
+  if (deep > -1) { cvDeep = true; cvPushed = true; openCollection(deep, null, $$('.row')[deep]); cvPushed = false; }
+
+  /* ================= derulare lină către secțiuni („Vezi colecțiile”, meniul, logo-ul) =================
+     Pornește încet, trece prin lotus (fotografia se deschide pe drum) și încetinește la destinație. */
+  let glideId = 0;
+  function glideTo(y) {
+    y = clamp(y, 0, html.scrollHeight - innerHeight);
+    const y0 = scrollY, dy = y - y0, id = ++glideId;
+    if (reduced() || Math.abs(dy) < 2) { scrollTo(0, y); return Promise.resolve(true); }
+    const D = clamp(450 + Math.abs(dy) * .45, 650, 1900), t0 = performance.now();
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    return new Promise(res => {
+      const step = now => {
+        if (id !== glideId) return res(false);       // vizitatorul a preluat derularea
+        const t = Math.min(1, (now - t0) / D);
+        scrollTo(0, y0 + dy * ease(t));
+        t < 1 ? requestAnimationFrame(step) : res(true);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  const stopGlide = () => { glideId++; };
+  addEventListener('wheel', stopGlide, { passive: true });
+  addEventListener('touchstart', stopGlide, { passive: true });
+  addEventListener('keydown', e => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) stopGlide(); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]'); if (!a) return;
+    const id = a.getAttribute('href').slice(1);
+    if (!['top', 'colectii', 'verighete', 'magazine'].includes(id)) return;
+    const el = document.getElementById(id); if (!el) return;
+    e.preventDefault();
+    const pad = parseFloat(getComputedStyle(html).scrollPaddingTop) || 0;
+    glideTo(id === 'top' ? 0 : el.getBoundingClientRect().top + scrollY - pad).then(ok => {
+      if (ok && id !== 'top') { el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: true }); }
+    });
+  });
+
+  /* ================= sertarul de rezervare ================= */
+  const dlg = $('#reserve'), form = $('#res-form'), done = $('#res-done');
+  let opener = null;
+
+  /* ziua și ora: „Altă zi” deschide șirul următoarelor 30 de zile; ora se alege pe interval.
+     Programul e cel de pe fațada din Strășeni (L–S 9–19, D 9–17); pentru Călărași e de confirmat, până atunci același. */
+  const WD = ['Du', 'Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ'], WDL = ['duminică', 'luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă'];
+  const MO = ['ian', 'feb', 'mar', 'apr', 'mai', 'iun', 'iul', 'aug', 'sep', 'oct', 'noi', 'dec'];
+  const MOL = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+  const SLOTS = d => [[9, 12], [12, 15], [15, d.getDay() === 0 ? 17 : 19]];
+  const dayAt = n => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d; };
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  // azi: un interval se mai poate alege dacă până la final a rămas cel puțin o oră
+  const slotOpen = (d, [, end]) => { const now = new Date(); return iso(d) !== iso(now) || now.getHours() + now.getMinutes() / 60 <= end - 1; };
+  const track = $('#days'), slotsEl = $('#slots'), more = $('#more-days'), moreIn = more.querySelector('.more__in');
+  const picked = name => form.querySelector(`input[name="${name}"]:checked`);
+  const chosenDay = () => {
+    const c = picked('cand'); if (!c) return null;
+    if (c.value === 'azi') return dayAt(0);
+    if (c.value === 'maine') return dayAt(1);
+    const z = picked('zi'); return z ? new Date(z.value + 'T00:00') : null;
+  };
+  function buildDays() {
+    track.innerHTML = Array.from({ length: 30 }, (_, i) => {
+      const d = dayAt(i + 2);
+      return `<label class="day"><input type="radio" name="zi" value="${iso(d)}" aria-label="${WDL[d.getDay()]}, ${d.getDate()} ${MOL[d.getMonth()]}"><span aria-hidden="true"><small>${WD[d.getDay()]}</small><b>${d.getDate()}</b><small>${MO[d.getMonth()]}</small></span></label>`;
+    }).join('');
+    track.scrollLeft = 0;
+    // dacă azi nu mai e niciun interval liber, „Azi” se dezactivează
+    const azi = form.querySelector('input[name="cand"][value="azi"]'), full = !SLOTS(dayAt(0)).some(s => slotOpen(dayAt(0), s));
+    azi.disabled = full;
+    if (full && azi.checked) form.querySelector('input[name="cand"][value="maine"]').checked = true;
+  }
+  function renderSlots() {
+    const d = chosenDay(), was = picked('ora') ? picked('ora').value : null;
+    slotsEl.innerHTML = SLOTS(d || dayAt(2)).map(([a, b], i) => {
+      const ok = !d || slotOpen(d, [a, b]);
+      return `<label><input type="radio" name="ora" value="${i}"${ok ? '' : ' disabled'}><span>${a}–${b}</span></label>`;
+    }).join('');
+    const keep = was !== null && slotsEl.querySelector(`input[value="${was}"]:not(:disabled)`); if (keep) keep.checked = true;
+  }
+  const updateNav = () => {
+    const max = track.scrollWidth - track.clientWidth - 2, atStart = track.scrollLeft <= 2, atEnd = track.scrollLeft >= max;
+    track.classList.toggle('at-start', atStart); track.classList.toggle('at-end', atEnd);
+    $$('[data-days]').forEach(b => { b.disabled = +b.dataset.days < 0 ? atStart : atEnd; });
+  };
+  function syncWhen() {
+    const alt = picked('cand') && picked('cand').value === 'alta';
+    more.classList.toggle('is-open', !!alt); moreIn.inert = !alt;
+    renderSlots(); updateNav();
+  }
+  $$('[data-days]').forEach(b => b.addEventListener('click', () => track.scrollBy({ left: +b.dataset.days * track.clientWidth * .8, behavior: reduced() ? 'auto' : 'smooth' })));
+  track.addEventListener('scroll', updateNav, { passive: true });
+  form.addEventListener('change', e => {
+    const n = e.target.name;
+    if (n === 'cand' || n === 'zi') { $('#e-zi').textContent = ''; syncWhen(); }
+    if (n === 'cand' && e.target.value === 'alta' && !picked('zi')) setTimeout(updateNav, 540);
+    if (n === 'ora') $('#e-ora').textContent = '';
+  });
+
+  $$('[data-open-reserve]').forEach(b => b.addEventListener('click', () => {
+    opener = b;
+    $('#res-title').textContent = b.dataset.title || 'Rezervă o piesă';
+    const ctx = $('#res-ctx'); ctx.hidden = !b.dataset.ctx; ctx.textContent = b.dataset.ctx ? 'Pentru: ' + b.dataset.ctx : '';
+    form.hidden = false; done.hidden = true; form.reset(); $$('#res-form .err').forEach(e => e.textContent = ''); $$('#res-form input').forEach(i => i.removeAttribute('aria-invalid'));
+    buildDays(); slotsEl.innerHTML = ''; syncWhen();
+    dlg.showModal(); if (cv.hidden) setLocked(true);
+    drawNow(dlg.querySelector('.drawer__top > svg'));
+  }));
+  dlg.querySelector('[data-close]').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', () => { if (cv.hidden) setLocked(false); else ['#main', '#hdr', '#ftr'].forEach(s => { $(s).inert = true; }); if (opener) opener.focus({ preventScroll: true }); });
+  const RULES = {
+    nume: v => v.trim().length >= 2 ? '' : 'Scrie-ne numele, ca să știm pe cine așteptăm.',
+    tel: v => /^(\+?373|0)?\d{8}$/.test(v.replace(/[\s().-]/g, '')) ? '' : 'Numărul pare incomplet. Exemplu: 062 000 587.',
+  };
+  const check = inp => { const msg = RULES[inp.name](inp.value); $('#e-' + inp.name).textContent = msg; inp.toggleAttribute('aria-invalid', !!msg); if (msg) inp.setAttribute('aria-invalid', 'true'); return !msg; };
+  $$('#res-form input[required]').forEach(inp => {
+    inp.addEventListener('blur', () => { if (inp.value) check(inp); });
+    inp.addEventListener('input', () => { if (inp.getAttribute('aria-invalid')) check(inp); });
+  });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const bad = [];
+    if (picked('cand').value === 'alta' && !picked('zi')) { $('#e-zi').textContent = 'Alege ziua în care vii.'; bad.push(track.querySelector('input')); }
+    if (!picked('ora')) { $('#e-ora').textContent = 'Alege intervalul în care vii.'; bad.push(slotsEl.querySelector('input:not(:disabled)')); }
+    bad.push(...$$('#res-form input[required]').filter(i => !check(i)));
+    if (bad.length) { bad[0].focus(); return; }
+    const d = chosenDay(), [a, b] = SLOTS(d)[+picked('ora').value];
+    const when = picked('cand').value === 'azi' ? 'azi' : picked('cand').value === 'maine' ? 'mâine' : WDL[d.getDay()];
+    $('#res-sum').textContent = `${picked('mag').value} · ${when}, ${d.getDate()} ${MOL[d.getMonth()]} · ${a}:00–${b}:00`;
+    const btn = $('#res-submit'); btn.setAttribute('aria-busy', 'true'); btn.textContent = 'Se trimite…';
+    setTimeout(() => {
+      btn.removeAttribute('aria-busy'); btn.textContent = 'Trimite rezervarea';
+      form.hidden = true; done.hidden = false; drawNow(done.querySelector('svg')); done.querySelector('h3').focus();
+    }, 700);
+  });
+})();
+</script>
+</body>
+</html>

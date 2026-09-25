@@ -1,0 +1,8 @@
+Aici se pune meniul complet primit de la client:
+
+    meniu-alindor.pdf          (obligatoriu - varianta romaneasca)
+    meniu-alindor-ru.pdf       (optional)
+    meniu-alindor-en.pdf       (optional)
+
+Dupa ce pui fisierul, ruleaza:  npm run build
+Butonul "Vezi meniul complet" de pe pagina Meniu devine activ singur.
